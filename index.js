@@ -3,6 +3,8 @@ import dotenv from "dotenv";
 import customError from "./utils/customError.js";
 import globalErrorHandler from "./controllers/errorController.js";
 import connectDB from "./config/connect.js";
+import authRoute from "./routes/authRoute.js";
+
 dotenv.config();
 
 process.on("uncaughtException", (err) => {
@@ -14,6 +16,8 @@ process.on("uncaughtException", (err) => {
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use("/api/auth",authRoute);
 
 app.all("*", (req, res, next) => {
   const err = new customError(
