@@ -5,7 +5,7 @@ import customError from "../utils/customError.js";
 import * as EmailValidator from "email-validator";
 
 const signup = asyncHandler(async (req, res, next) => {
-  const { firstName, lastName, email, password, role } = req.body;
+  let { firstName, lastName, email, password, role } = req.body;
 
   if (
     !email ||
