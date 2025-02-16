@@ -1,4 +1,4 @@
-import jwt from "jsonwebtoken";
+import { generateToken, verifyToken } from "../utils/jwt.js";
 import asyncHandler from "express-async-handler";
 import User from "../models/userModel.js";
 import customError from "../utils/customError.js";
@@ -43,7 +43,71 @@ const signup = asyncHandler(async (req, res, next) => {
 
   await user.save();
 
-  res.status(201).json({ message: "User created successfully" });
+  const token = generateToken(user._id);
+
+  res.status(201).json({ token });
 });
 
-export { signup };
+const login = asyncHandler(async (req, res, next) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return next(new customError("Please provide an email and password", 400));
+  }
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    return next(new customError("Invalid credentials", 401));
+  }
+
+  const isMatch = await user.comparePassword(password);
+
+  if (!isMatch) {
+    return next(new customError("Invalid credentials", 401));
+  }
+
+  const token = generateToken(user._id);
+
+  res.status(200).json({ token });
+});
+
+const google = asyncHandler(async (req, res, next) => {
+  let { googleId, firstName, lastName, email, role } = req.body;
+
+  if (!googleId || !email || !firstName || !lastName || !role) {
+    return next(new customError("Please provide all fields", 400));
+  }
+
+  const existUser = await User.findOne({ email });
+
+  if (existUser) {
+    if (!existUser.googleId) {
+      existUser.googleId = googleId;
+      await existUser.save();
+    }
+
+    const token = generateToken(existUser._id);
+    return res.status(200).json({ token });
+  }
+
+  const user = new User({
+    googleId,
+    firstName,
+    lastName,
+    email,
+    role,
+  });
+
+  await user.save();
+
+  const token = generateToken(user._id);
+
+  res.status(201).json({ token });
+});
+
+const forgotPassword = asyncHandler(async (req, res, next) => {});
+
+const resetPassword = asyncHandler(async (req, res, next) => {});
+
+export { signup, login, google, forgotPassword, resetPassword };
