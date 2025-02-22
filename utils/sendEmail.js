@@ -41,14 +41,14 @@ const sendEmail = asyncHandler(async (options) => {
                 <td style="padding: 40px 0px 0px;">
                   <div style="padding: 20px; background-color: rgb(255, 255, 255);">
                     <div style="color: rgb(0, 0, 0); text-align: left;">
-                      <h1 style="margin: 1rem 0">Trouble signing in?</h1>
+                      <h1 style="margin: 1rem 0">Reset Password</h1>
                       <p style="padding-bottom: 16px">We've received a request to reset the password for this user account.</p>
                         <p style="padding-bottom: 16px">Use the following code to reset your password:</p>
                         <h2 style="padding-bottom: 16px; font-size: 24px; font-weight: 700; color: rgb(0, 0, 0);">${options.code}</h2>
                         <p style="padding-bottom: 16px">This code will expire in 10 minutes.</p>
 
                       <p style="padding-bottom: 16px">If you didn't ask to reset your password, you can ignore this email.</p>
-                      <p style="padding-bottom: 16px">Thanks,<br>The Mailmeteor team</p>
+                      <p style="padding-bottom: 16px">Thanks,<br>Optima team</p>
                     </div>
                   </div>
                   <div style="padding-top: 20px; color: rgb(153, 153, 153); text-align: center;">
