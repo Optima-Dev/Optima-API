@@ -4,6 +4,7 @@ import {
   login,
   google,
   forgotPassword,
+  verifyCode,
   resetPassword,
 } from "../controllers/authController.js";
 
@@ -192,7 +193,8 @@ router.post("/signup", signup);
 router.post("/login", login);
 router.post("/google", google);
 
-router.post("/forgotpassword", forgotPassword);
-router.put("/resetpassword", resetPassword);
+router.post("/forgot-password", forgotPassword);
+router.post("/verify-code", verifyCode);
+router.post("/reset-password", resetPassword);
 
 export default router;

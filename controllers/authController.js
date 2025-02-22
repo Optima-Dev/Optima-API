@@ -1,8 +1,9 @@
 import { generateToken, verifyToken } from "../utils/jwt.js";
 import asyncHandler from "express-async-handler";
-import User from "../models/userModel.js";
 import customError from "../utils/customError.js";
+import User from "../models/userModel.js";
 import * as EmailValidator from "email-validator";
+import sendEmail from "../utils/sendEmail.js";
 
 const signup = asyncHandler(async (req, res, next) => {
   let { firstName, lastName, email, password, role } = req.body;
@@ -106,8 +107,100 @@ const google = asyncHandler(async (req, res, next) => {
   res.status(201).json({ token });
 });
 
-const forgotPassword = asyncHandler(async (req, res, next) => {});
+const forgotPassword = asyncHandler(async (req, res, next) => {
+  const { email } = req.body;
 
-const resetPassword = asyncHandler(async (req, res, next) => {});
+  if (!email) {
+    return next(new customError("Please provide an email", 400));
+  }
 
-export { signup, login, google, forgotPassword, resetPassword };
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    return next(new customError("User not found", 404));
+  }
+
+  const code = Math.floor(1000 + Math.random() * 9000);
+
+  user.resetPasswordCode = code;
+  user.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
+
+  await user.save();
+
+  const options = {
+    email,
+    subject: "Password reset code",
+    code,
+  };
+
+  try {
+    await sendEmail(options);
+    res.status(200).json({ message: "Email sent" });
+  } catch (error) {
+    user.resetPasswordCode = undefined;
+    user.resetPasswordExpire = undefined;
+    user.verifiedCode = false;
+    await user.save();
+    return next(new customError("Email could not be sent", 500));
+  }
+});
+
+const verifyCode = asyncHandler(async (req, res, next) => {
+  const { email, code } = req.body;
+
+  if (!email || !code) {
+    return next(new customError("Please provide an email and code", 400));
+  }
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    return next(new customError("User not found", 404));
+  }
+
+  if (code !== user.resetPasswordCode) {
+    return next(new customError("Invalid code", 400));
+  }
+
+  if (user.resetPasswordExpire < Date.now()) {
+    user.resetPasswordCode = undefined;
+    user.resetPasswordExpire = undefined;
+    user.verifiedCode = false;
+    await user.save();
+    return next(new customError("Code expired", 400));
+  }
+
+  user.verifiedCode = true;
+  await user.save();
+
+  res.status(200).json({ message: "Code verified" });
+});
+
+const resetPassword = asyncHandler(async (req, res, next) => {
+  const { email, newPassword } = req.body;
+
+  if (!email || !newPassword) {
+    return next(new customError("Please provide an email and password", 400));
+  }
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    return next(new customError("User not found", 404));
+  }
+
+  if (!user.verifiedCode) {
+    return next(new customError("Code not verified", 400));
+  }
+
+  user.password = newPassword;
+  user.resetPasswordCode = undefined;
+  user.resetPasswordExpire = undefined;
+  user.verifiedCode = false;
+
+  await user.save();
+
+  res.status(200).json({ message: "Password reset successfully" });
+});
+
+export { signup, login, google, forgotPassword, verifyCode, resetPassword };
