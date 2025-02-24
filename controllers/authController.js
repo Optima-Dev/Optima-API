@@ -107,7 +107,7 @@ const google = asyncHandler(async (req, res, next) => {
   res.status(201).json({ token });
 });
 
-const forgotPassword = asyncHandler(async (req, res, next) => {
+const sendCode = asyncHandler(async (req, res, next) => {
   const { email } = req.body;
 
   if (!email) {
@@ -203,4 +203,4 @@ const resetPassword = asyncHandler(async (req, res, next) => {
   res.status(200).json({ message: "Password reset successfully" });
 });
 
-export { signup, login, google, forgotPassword, verifyCode, resetPassword };
+export { signup, login, google, sendCode, verifyCode, resetPassword };

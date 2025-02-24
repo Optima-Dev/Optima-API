@@ -3,7 +3,7 @@ import {
   signup,
   login,
   google,
-  forgotPassword,
+  sendCode,
   verifyCode,
   resetPassword,
 } from "../controllers/authController.js";
@@ -193,7 +193,7 @@ router.post("/signup", signup);
 router.post("/login", login);
 router.post("/google", google);
 
-router.post("/forgot-password", forgotPassword);
+router.post("/send-code", sendCode);
 router.post("/verify-code", verifyCode);
 router.post("/reset-password", resetPassword);
 
