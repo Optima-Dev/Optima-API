@@ -15,7 +15,7 @@ const router = express.Router();
  * /api/auth/signup:
  *   post:
  *     summary: Register a new user
- *     description: Create a new user with email and password.
+ *     description: Create a new user with email , password, firstName, lastName and role.
  *     tags:
  *       - Authentication
  *     requestBody:
@@ -187,6 +187,184 @@ const router = express.Router();
  *               message:
  *                type: string
  *                example: "Please provide an email and password"
+ */
+
+/**
+ * @swagger
+ * /api/auth/send-code:
+ *   post:
+ *     summary: Send code to user email
+ *     description: Send code to user email to reset password.
+ *     tags:
+ *       - Authentication
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: user@example.com
+ *     responses:
+ *       200:
+ *         description: Code sent successfully
+ *         content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *               message:
+ *                type: string
+ *                example: "Code sent successfully"
+ *       400:
+ *         description: User forgot to provide a field
+ *         content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *               message:
+ *                type: string
+ *                example: "Please provide an email"
+ *       404:
+ *         description: User not found
+ *         content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *               message:
+ *                type: string
+ *                example: "User not found"
+ *       500:
+ *         description: Code could not be sent
+ *         content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *               message:
+ *                type: string
+ *                example: "Code could not be sent"
+ *
+ */
+
+/**
+ * @swagger
+ * /api/auth/verify-code:
+ *   post:
+ *     summary: Verify code
+ *     description: Verify code sent to user email to reset password.
+ *     tags:
+ *       - Authentication
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - code
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: user@example.com
+ *               code:
+ *                 type: string
+ *                 example: 1234
+ *     responses:
+ *       200:
+ *         description: Code verified
+ *         content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *               message:
+ *                type: string
+ *                example: "Code verified"
+ *       400:
+ *         description: User forgot to provide a field, invalid code or code expired
+ *         content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *               message:
+ *                type: string
+ *                example: "Please provide an email and code"
+ *       404:
+ *         description: User not found
+ *         content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *               message:
+ *                type: string
+ *                example: "User not found"
+ */
+
+/**
+ * @swagger
+ * /api/auth/reset-password:
+ *   post:
+ *     summary: Reset password
+ *     description: Reset password with email and new password.
+ *     tags:
+ *       - Authentication
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - newPassword
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: user@example.com
+ *               newPassword:
+ *                 type: string
+ *                 example: 1234
+ *     responses:
+ *       200:
+ *         description: password reset successfully
+ *         content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *               message:
+ *                type: string
+ *                example: "Password reset successfully"
+ *       400:
+ *         description: User forgot to provide a field, code not verified or invalid email
+ *         content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *               message:
+ *                type: string
+ *                example: "Please provide an email and newPassword"
+ *       404:
+ *         description: User not found
+ *         content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *               message:
+ *                type: string
+ *                example: "User not found"
  */
 
 router.post("/signup", signup);

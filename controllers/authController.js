@@ -135,13 +135,13 @@ const sendCode = asyncHandler(async (req, res, next) => {
 
   try {
     await sendEmail(options);
-    res.status(200).json({ message: "Email sent" });
+    res.status(200).json({ message: "Code sent successfully" });
   } catch (error) {
     user.resetPasswordCode = undefined;
     user.resetPasswordExpire = undefined;
     user.verifiedCode = false;
     await user.save();
-    return next(new customError("Email could not be sent", 500));
+    return next(new customError("Code could not be sent", 500));
   }
 });
 
@@ -180,7 +180,9 @@ const resetPassword = asyncHandler(async (req, res, next) => {
   const { email, newPassword } = req.body;
 
   if (!email || !newPassword) {
-    return next(new customError("Please provide an email and password", 400));
+    return next(
+      new customError("Please provide an email and newPassword", 400)
+    );
   }
 
   const user = await User.findOne({ email });

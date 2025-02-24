@@ -31,6 +31,9 @@ const swaggerOptions = {
       {
         url: process.env.BASE_URL,
       },
+      {
+        url: "http://localhost:3000",
+      },
     ],
   },
   apis: ["./routes/*.js"],
