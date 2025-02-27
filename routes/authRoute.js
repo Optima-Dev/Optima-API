@@ -192,6 +192,16 @@ const router = express.Router();
  *               message:
  *                type: string
  *                example: "Please provide an email and password"
+ *       401:
+ *         description: invalid credentials
+ *         content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *               message:
+ *                type: string
+ *                example: "Invalid credentials"
  */
 
 /**
