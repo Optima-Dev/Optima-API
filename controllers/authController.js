@@ -50,15 +50,27 @@ const signup = asyncHandler(async (req, res, next) => {
 });
 
 const login = asyncHandler(async (req, res, next) => {
-  const { email, password } = req.body;
+  const { email, password, role } = req.body;
 
   if (!email || !password) {
     return next(new customError("Please provide an email and password", 400));
   }
 
+  if (!role) {
+    return next(new customError("Please provide a role", 400));
+  }
+
   const user = await User.findOne({ email });
 
   if (!user) {
+    return next(new customError("Invalid credentials", 401));
+  }
+
+  if (user.role !== role) {
+    return next(new customError("Invalid credentials", 401));
+  }
+
+  if (!user.password) {
     return next(new customError("Invalid credentials", 401));
   }
 
@@ -83,6 +95,10 @@ const google = asyncHandler(async (req, res, next) => {
   const existUser = await User.findOne({ email });
 
   if (existUser) {
+    if (existUser.role !== role) {
+      return next(new customError("Invalid credentials", 401));
+    }
+
     if (!existUser.googleId) {
       existUser.googleId = googleId;
       await existUser.save();

@@ -88,6 +88,7 @@ const router = express.Router();
  *             required:
  *               - email
  *               - password
+ *               - role
  *             properties:
  *               email:
  *                 type: string
@@ -95,6 +96,10 @@ const router = express.Router();
  *               password:
  *                 type: string
  *                 example: MyStrongPassword123
+ *               role:
+ *                 enum: [helper, seeker]
+ *                 type: string
+ *                 example: helper
  *     responses:
  *       200:
  *         description: User logged in successfully
