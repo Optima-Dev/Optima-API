@@ -8,21 +8,28 @@ import sendEmail from "../utils/sendEmail.js";
 const signup = asyncHandler(async (req, res, next) => {
   let { firstName, lastName, email, password, role } = req.body;
 
-  if (
-    !email ||
-    !password ||
-    !firstName ||
-    !lastName ||
-    !role ||
-    password.length < 6
-  ) {
-    return next(new customError("Please provide an email and password", 400));
-  }
-
   email = email.trim();
   firstName = firstName.trim();
   lastName = lastName.trim();
   password = password.trim();
+  role = role.trim();
+
+  if (!email || !password || !firstName || !lastName || !role) {
+    return next(new customError("Please provide an email and password", 400));
+  }
+
+  if (password.length < 6) {
+    return next(new customError("Password must be at least 6 characters", 400));
+  }
+
+  if (firstName.length < 2 || lastName.length < 2) {
+    return next(
+      new customError(
+        "First name and last name must be at least 2 characters",
+        400
+      )
+    );
+  }
 
   if (!EmailValidator.validate(email)) {
     return next(new customError("Please provide a valid email", 400));
@@ -50,10 +57,18 @@ const signup = asyncHandler(async (req, res, next) => {
 });
 
 const login = asyncHandler(async (req, res, next) => {
-  const { email, password, role } = req.body;
+  let { email, password, role } = req.body;
+
+  password = password.trim();
+  email = email.trim();
+  role = role.trim();
 
   if (!email || !password) {
     return next(new customError("Please provide an email and password", 400));
+  }
+
+  if (!EmailValidator.validate(email)) {
+    return next(new customError("Please provide a valid email", 400));
   }
 
   if (!role) {
@@ -87,6 +102,12 @@ const login = asyncHandler(async (req, res, next) => {
 
 const google = asyncHandler(async (req, res, next) => {
   let { googleId, firstName, lastName, email, role } = req.body;
+
+  googleId = googleId.trim();
+  email = email.trim();
+  firstName = firstName.trim();
+  lastName = lastName.trim();
+  role = role.trim();
 
   if (!googleId || !email || !firstName || !lastName || !role) {
     return next(new customError("Please provide all fields", 400));
@@ -124,7 +145,9 @@ const google = asyncHandler(async (req, res, next) => {
 });
 
 const sendCode = asyncHandler(async (req, res, next) => {
-  const { email } = req.body;
+  let { email } = req.body;
+
+  email = email.trim();
 
   if (!email) {
     return next(new customError("Please provide an email", 400));
@@ -162,7 +185,10 @@ const sendCode = asyncHandler(async (req, res, next) => {
 });
 
 const verifyCode = asyncHandler(async (req, res, next) => {
-  const { email, code } = req.body;
+  let { email, code } = req.body;
+
+  email = email.trim();
+  code = code.trim();
 
   if (!email || !code) {
     return next(new customError("Please provide an email and code", 400));
@@ -193,12 +219,19 @@ const verifyCode = asyncHandler(async (req, res, next) => {
 });
 
 const resetPassword = asyncHandler(async (req, res, next) => {
-  const { email, newPassword } = req.body;
+  let { email, newPassword } = req.body;
+
+  email = email.trim();
+  newPassword = newPassword.trim();
 
   if (!email || !newPassword) {
     return next(
       new customError("Please provide an email and newPassword", 400)
     );
+  }
+
+  if (newPassword.length < 6) {
+    return next(new customError("Password must be at least 6 characters", 400));
   }
 
   const user = await User.findOne({ email });
