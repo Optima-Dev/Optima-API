@@ -15,11 +15,11 @@ const signup = asyncHandler(async (req, res, next) => {
   role = role.trim();
 
   if (!email || !password || !firstName || !lastName || !role) {
-    return next(new customError("Please provide an email and password", 400));
+    return next(new customError("Please fill all fields", 400));
   }
 
-  if (password.length < 6) {
-    return next(new customError("Password must be at least 6 characters", 400));
+  if (password.length < 8) {
+    return next(new customError("Password must be at least 8 characters", 400));
   }
 
   if (firstName.length < 2 || lastName.length < 2) {
@@ -78,11 +78,11 @@ const login = asyncHandler(async (req, res, next) => {
   const user = await User.findOne({ email });
 
   if (!user) {
-    return next(new customError("Invalid credentials", 401));
+    return next(new customError("User not found", 404));
   }
 
   if (user.role !== role) {
-    return next(new customError("Invalid credentials", 401));
+    return next(new customError("Invalid Role", 401));
   }
 
   if (!user.password) {
@@ -117,7 +117,7 @@ const google = asyncHandler(async (req, res, next) => {
 
   if (existUser) {
     if (existUser.role !== role) {
-      return next(new customError("Invalid credentials", 401));
+      return next(new customError("Invalid Role", 401));
     }
 
     if (!existUser.googleId) {
@@ -190,8 +190,12 @@ const verifyCode = asyncHandler(async (req, res, next) => {
   email = email.trim();
   code = code.trim();
 
-  if (!email || !code) {
-    return next(new customError("Please provide an email and code", 400));
+  if (!email) {
+    return next(new customError("Please provide an email", 400));
+  }
+
+  if (!code) {
+    return next(new customError("Please provide a code", 400));
   }
 
   const user = await User.findOne({ email });
@@ -230,8 +234,8 @@ const resetPassword = asyncHandler(async (req, res, next) => {
     );
   }
 
-  if (newPassword.length < 6) {
-    return next(new customError("Password must be at least 6 characters", 400));
+  if (newPassword.length < 8) {
+    return next(new customError("Password must be at least 8 characters", 400));
   }
 
   const user = await User.findOne({ email });

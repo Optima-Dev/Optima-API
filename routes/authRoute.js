@@ -131,6 +131,16 @@ const router = express.Router();
  *               message:
  *                type: string
  *                example: "Invalid credentials"
+ *       404:
+ *         description: User not found
+ *         content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *               message:
+ *                type: string
+ *                example: "User not found"
  *
  */
 
