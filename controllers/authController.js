@@ -59,20 +59,20 @@ const signup = asyncHandler(async (req, res, next) => {
 const login = asyncHandler(async (req, res, next) => {
   let { email, password, role } = req.body;
 
-  password = password.trim();
-  email = email.trim();
-  role = role.trim();
-
   if (!email || !password) {
     return next(new customError("Please provide an email and password", 400));
   }
 
-  if (!EmailValidator.validate(email)) {
-    return next(new customError("Please provide a valid email", 400));
-  }
-
   if (!role) {
     return next(new customError("Please provide a role", 400));
+  }
+
+  password = password.trim();
+  email = email.trim();
+  role = role.trim();
+
+  if (!EmailValidator.validate(email)) {
+    return next(new customError("Please provide a valid email", 400));
   }
 
   const user = await User.findOne({ email });
