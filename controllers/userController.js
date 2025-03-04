@@ -4,47 +4,84 @@ import customError from "../utils/customError.js";
 import User from "../models/userModel.js";
 
 const getMe = asyncHandler(async (req, res, next) => {
-    const user = await User.findById(req.user._id).select("-password -resetPasswordCode -resetPasswordExpire -verifiedCode -__v ");
-    if (!user) {
-        return next(new customError("User not found!", 404));
-    }
-    res.status(200).json({ user });
-});
+  if (!req.user) {
+    return next(new customError("User not found!", 404));
+  }
 
-const deleteMe = asyncHandler(async (req, res, next) => {
-  const user = await User.findByIdAndDelete(req.user._id);
+  const user = await User.findById(req.user._id).select(
+    "-password -resetPasswordCode -resetPasswordExpire -verifiedCode -__v"
+  );
+
   if (!user) {
     return next(new customError("User not found!", 404));
   }
+
+  res.status(200).json({ user });
+});
+
+const deleteMe = asyncHandler(async (req, res, next) => {
+  if (!req.user) {
+    return next(new customError("User not found!", 404));
+  }
+
+  const user = await User.findByIdAndDelete(req.user._id);
+
+  if (!user) {
+    return next(new customError("User not found!", 404));
+  }
+
   res.status(204).json({ message: "User deleted successfully" });
 });
 
 const updateMe = asyncHandler(async (req, res, next) => {
-  // 1) create error if user post password data
-  if (req.body.password || req.body.confirmPassword) {
+  if (!req.user) {
+    return next(new customError("User not found!", 404));
+  }
+
+  if (req.body.password || req.body.newPassword) {
     return next(new customError("Password cannot be updated here!", 400));
   }
 
-  // 2) filtered out unwanted and unallowed fields to be updated
-  const filteredBody = filterObj(req.body, "name", "email");
+  const updated = {
+    firstName: req.body.firstName,
+    lastName: req.body.lastName,
+    email: req.body.email,
+  };
 
-  // update user document
-  const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
+  if (!updated.firstName) {
+    updated.firstName = req.user.firstName;
+  }
+
+  if (!updated.lastName) {
+    updated.lastName = req.user.lastName;
+  }
+
+  if (!updated.email) {
+    updated.email = req.user.email;
+  } else {
+    if (updated.email !== req.user.email) {
+      const user = await User.findOne({ email: updated.email });
+      if (user) {
+        return next(new customError("Email already exists!", 400));
+      }
+    }
+  }
+
+  const updatedUser = await User.findByIdAndUpdate(req.user._id, updated, {
     new: true,
     runValidators: true,
   });
 
-  res.status(200).json({
-    status: "success",
-    data: {
-      user: updatedUser,
-    },
-  });
+  if (!updatedUser) {
+    return next(new customError("User not found!", 404));
+  }
+
+  res.status(200).json({ user: updatedUser });
 });
 
 const isAuthenticated = asyncHandler(async (req, res, next) => {
   let token;
-  // 1) get token from request header
+
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer")
@@ -60,12 +97,10 @@ const isAuthenticated = asyncHandler(async (req, res, next) => {
     );
   }
 
-  // 2) verify token
   const decoded = await verifyToken(token);
-  console.log(decoded);
 
-  // 3) check if user still exists
   const currentUser = await User.findById(decoded.userId);
+
   if (!currentUser) {
     return next(
       new customError(
@@ -74,7 +109,9 @@ const isAuthenticated = asyncHandler(async (req, res, next) => {
       )
     );
   }
+
   req.user = currentUser;
+
   next();
 });
 
