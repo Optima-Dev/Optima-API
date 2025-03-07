@@ -115,4 +115,15 @@ const isAuthenticated = asyncHandler(async (req, res, next) => {
   next();
 });
 
-export { getMe, updateMe, deleteMe, isAuthenticated };
+const isAuthorized = (...roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return next(
+        new customError("You are not authorized to access this route.", 403)
+      );
+    }
+    next();
+  };
+};
+
+export { getMe, updateMe, deleteMe, isAuthenticated, isAuthorized };

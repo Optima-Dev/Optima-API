@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema(
       required: [true, "First name is required"],
       minlength: [2, "First name must be at least 2 characters"],
     },
+
     lastName: {
       type: String,
       required: [true, "Last name is required"],
@@ -34,22 +35,41 @@ const userSchema = new mongoose.Schema(
 
     myPeople: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ],
+        customFirstName: {
+          type: String,
+          required: [true, "First name is required"],
+          minlength: [2, "First name must be at least 2 characters"],
+        },
+        customLastName: {
+          type: String,
+          required: [true, "Last name is required"],
+          minlength: [2, "Last name must be at least 2 characters"],
+        },
 
-    friendRequests: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
       },
     ],
 
     myPeopleCallRequests: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        customFirstName: {
+          type: String,
+          required: [true, "First name is required"],
+          minlength: [2, "First name must be at least 2 characters"],
+        },
+        customLastName: {
+          type: String,
+          required: [true, "Last name is required"],
+          minlength: [2, "Last name must be at least 2 characters"],
+        },
+
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
       },
     ],
 

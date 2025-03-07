@@ -7,6 +7,7 @@ import swaggerJSDoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
 import authRoute from "./routes/authRoute.js";
 import userRoute from "./routes/userRoute.js";
+import friendRequestRoute from "./routes/friendRequestRoute.js";
 
 dotenv.config();
 
@@ -45,6 +46,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 app.use("/api/auth", authRoute);
 app.use("/api/users", userRoute);
+app.use("/api/friend-requests", friendRequestRoute);
 
 app.all("*", (req, res, next) => {
   const err = new customError(
