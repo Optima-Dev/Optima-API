@@ -12,6 +12,13 @@ const router = express.Router();
 
 /**
  * @swagger
+ * tags:
+ *   name: Authentication
+ *   description: Authentication endpoints
+ */
+
+/**
+ * @swagger
  * /api/auth/signup:
  *   post:
  *     summary: Register a new user

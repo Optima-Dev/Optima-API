@@ -130,9 +130,110 @@ const rejectFriendRequest = asyncHandler(async (req, res, next) => {
   res.status(200).json({ message: "Friend request rejected!" });
 });
 
+const removeFriend = asyncHandler(async (req, res, next) => {
+  const { friendId } = req.body;
+
+  if (!friendId) {
+    return next(new customError("Please provide friend id!", 400));
+  }
+
+  const friend = await User.findById(friendId);
+
+  if (!friend) {
+    return next(new customError("Friend not found!", 404));
+  }
+
+  const user = req.user;
+
+  user.myPeople = user.myPeople.filter((person) => {
+    return person.user.toString() !== friendId;
+  });
+
+  friend.myPeople = friend.myPeople.filter((person) => {
+    return person.user.toString() !== user._id.toString();
+  });
+
+  await user.save();
+  await friend.save();
+
+  res.status(200).json({ message: "Friend removed!" });
+});
+
+const editFriend = asyncHandler(async (req, res, next) => {
+  const { friendId, customFirstName, customLastName } = req.body;
+
+  if (!friendId) {
+    return next(
+      new customError("Please provide all the required fields!", 400)
+    );
+  }
+
+  const friend = await User.findById(friendId);
+
+  if (!friend) {
+    return next(new customError("Friend not found!", 404));
+  }
+
+  const user = req.user;
+
+  const friendIndex = user.myPeople.findIndex((person) => {
+    return person.user.toString() === friendId;
+  });
+
+  if (friendIndex === -1) {
+    return next(new customError("Friend not found!", 404));
+  }
+
+  customFirstName = customFirstName.trim();
+  customLastName = customLastName.trim();
+
+  customFirstName =
+    customFirstName || user.myPeople[friendIndex].customFirstName;
+
+  customLastName = customLastName || user.myPeople[friendIndex].customLastName;
+
+  user.myPeople[friendIndex].customFirstName = customFirstName;
+  user.myPeople[friendIndex].customLastName = customLastName;
+
+  await user.save();
+
+  res.status(200).json({ message: "Friend updated!" });
+});
+
+const getAllFriends = asyncHandler(async (req, res, next) => {
+  const user = req.user;
+
+  let friends = [];
+  let notFoundFriends = [];
+
+  for (let i = 0; i < user.myPeople.length; i++) {
+    const friend = await User.findById(user.myPeople[i].user);
+
+    if (!friend) {
+      notFoundFriends.push(user.myPeople[i].user);
+      continue;
+    }
+
+    friends.push(user.myPeople[i]);
+  }
+
+  if (notFoundFriends.length > 0) {
+    user.myPeople = user.myPeople.filter((person) => {
+      return !notFoundFriends.includes(person.user);
+    });
+
+    await user.save();
+  }
+
+  res.status(200).json({ friends });
+});
+
 export {
   sendFriendRequest,
   acceptFriendRequest,
   rejectFriendRequest,
   getAllFriendRequests,
+  removeFriend,
+  editFriend,
+  getAllFriends,
 };
