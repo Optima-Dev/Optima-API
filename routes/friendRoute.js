@@ -47,15 +47,15 @@ const router = express.Router();
  *                   seekerId:
  *                     type: string
  *                     example: "5f8d0d55b54764421b7156db"
- *                   helperId:
- *                     type: string
- *                     example: "5f8d0d55b54764421b7156dc"
- *                   customFirstName:
+ *                   firstName:
  *                     type: string
  *                     example: "John"
- *                   customLastName:
+ *                   lastName:
  *                     type: string
- *                     example: "Smith"
+ *                     example: "Doe"
+ *                   email:
+ *                     type: string
+ *                     example: "user@example.com"
  */
 
 /**

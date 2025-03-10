@@ -18,7 +18,13 @@ const getAllFriendRequests = asyncHandler(async (req, res, next) => {
       continue;
     }
 
-    filteredFriendRequests.push(friendRequests[i]);
+    filteredFriendRequests.push({
+      _id: friendRequests[i]._id,
+      seekerId: friendRequests[i].seekerId,
+      firstName: seeker.firstName,
+      lastName: seeker.lastName,
+      email: seeker.email,
+    });
   }
 
   res.status(200).json({ friendRequests: filteredFriendRequests });
@@ -57,6 +63,16 @@ const sendFriendRequest = asyncHandler(async (req, res, next) => {
 
   if (existingFriendRequest) {
     return next(new customError("Friend request already sent!", 400));
+  }
+
+  const user = await User.findById(seekerId);
+
+  const isFriend = user.myPeople.find((person) => {
+    return person.user.toString() === helperId.toString();
+  });
+
+  if (isFriend) {
+    return next(new customError("Already a friend!", 400));
   }
 
   const friendRequest = new FriendRequest({
