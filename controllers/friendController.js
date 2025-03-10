@@ -201,29 +201,38 @@ const editFriend = asyncHandler(async (req, res, next) => {
 });
 
 const getAllFriends = asyncHandler(async (req, res, next) => {
-  const user = req.user;
+  const user = await User.findById(req.user._id)
+    .populate("myPeople.user", "firstName lastName email") // Add fields you want to include
+    .exec();
 
-  let friends = [];
+  const originalMyPeople = user.myPeople;
   let notFoundFriends = [];
 
-  for (let i = 0; i < user.myPeople.length; i++) {
-    const friend = await User.findById(user.myPeople[i].user);
-
-    if (!friend) {
-      notFoundFriends.push(user.myPeople[i].user);
-      continue;
+  // Filter out invalid references
+  user.myPeople = user.myPeople.filter((person) => {
+    if (!person.user) {
+      notFoundFriends.push(person.user);
+      return false;
     }
+    return true;
+  });
 
-    friends.push(user.myPeople[i]);
-  }
-
+  // Save if any invalid references were found
   if (notFoundFriends.length > 0) {
-    user.myPeople = user.myPeople.filter((person) => {
-      return !notFoundFriends.includes(person.user);
-    });
-
     await user.save();
   }
+
+  // Prepare response with populated data
+  const friends = user.myPeople.map((person) => ({
+    customFirstName: person.customFirstName,
+    customLastName: person.customLastName,
+    user: {
+      _id: person.user._id,
+      firstName: person.user.firstName,
+      lastName: person.user.lastName,
+      email: person.user.email,
+    },
+  }));
 
   res.status(200).json({ friends });
 });

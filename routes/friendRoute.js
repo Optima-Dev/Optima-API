@@ -62,13 +62,13 @@ const router = express.Router();
  * @swagger
  * /api/friends/all:
  *   get:
- *     summary: Get all friends
+ *     summary: Get all friends with user details
  *     tags: [Friends]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: List of friends
+ *         description: List of friends with populated user details
  *         content:
  *           application/json:
  *             schema:
@@ -81,13 +81,26 @@ const router = express.Router();
  *                     properties:
  *                       customFirstName:
  *                         type: string
- *                         example: "John"
+ *                         example: "Bestie"
  *                       customLastName:
  *                         type: string
- *                         example: "Doe"
+ *                         example: "Smith"
  *                       user:
- *                         type: string
- *                         example: "5f8d0d55b54764421b7156da"
+ *                         type: object
+ *                         properties:
+ *                           _id:
+ *                             type: string
+ *                             example: "5f8d0d55b54764421b7156da"
+ *                           firstName:
+ *                             type: string
+ *                             example: "John"
+ *                           lastName:
+ *                             type: string
+ *                             example: "Doe"
+ *                           email:
+ *                             type: string
+ *                             format: email
+ *                             example: "john.doe@example.com"
  */
 
 /**
