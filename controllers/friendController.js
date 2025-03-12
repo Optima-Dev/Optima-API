@@ -2,6 +2,7 @@ import asyncHandler from "express-async-handler";
 import customError from "../utils/customError.js";
 import User from "../models/userModel.js";
 import FriendRequest from "../models/friendRequestModel.js";
+import validator from "email-validator";
 
 const getAllFriendRequests = asyncHandler(async (req, res, next) => {
   const helperId = req.user._id;
@@ -34,14 +35,36 @@ const sendFriendRequest = asyncHandler(async (req, res, next) => {
   let { customFirstName, customLastName, helperEmail } = req.body;
   const seekerId = req.user._id;
 
-  customFirstName = customFirstName.trim();
-  customLastName = customLastName.trim();
-  helperEmail = helperEmail.trim();
-
   if (!customFirstName || !customLastName || !helperEmail) {
     return next(
       new customError("Please provide all the required fields!", 400)
     );
+  }
+
+  customFirstName = customFirstName.trim();
+  customLastName = customLastName.trim();
+  helperEmail = helperEmail.trim();
+
+  if (customFirstName.length < 2 || customFirstName.length > 50) {
+    return next(
+      new customError(
+        "Custom first name must be between 2 and 50 characters!",
+        400
+      )
+    );
+  }
+
+  if (customLastName.length < 2 || customLastName.length > 50) {
+    return next(
+      new customError(
+        "Custom last name must be between 2 and 50 characters!",
+        400
+      )
+    );
+  }
+
+  if (!validator.validate(helperEmail)) {
+    return next(new customError("Invalid email!", 400));
   }
 
   const helper = await User.findOne({ email: helperEmail });
@@ -176,9 +199,9 @@ const removeFriend = asyncHandler(async (req, res, next) => {
 });
 
 const editFriend = asyncHandler(async (req, res, next) => {
-  const { friendId, customFirstName, customLastName } = req.body;
+  let { friendId, customFirstName, customLastName } = req.body;
 
-  if (!friendId) {
+  if (!friendId || !customFirstName || !customLastName) {
     return next(
       new customError("Please provide all the required fields!", 400)
     );
@@ -203,10 +226,23 @@ const editFriend = asyncHandler(async (req, res, next) => {
   customFirstName = customFirstName.trim();
   customLastName = customLastName.trim();
 
-  customFirstName =
-    customFirstName || user.myPeople[friendIndex].customFirstName;
+  if (customFirstName.length < 2 || customFirstName.length > 50) {
+    return next(
+      new customError(
+        "Custom first name must be between 2 and 50 characters!",
+        400
+      )
+    );
+  }
 
-  customLastName = customLastName || user.myPeople[friendIndex].customLastName;
+  if (customLastName.length < 2 || customLastName.length > 50) {
+    return next(
+      new customError(
+        "Custom last name must be between 2 and 50 characters!",
+        400
+      )
+    );
+  }
 
   user.myPeople[friendIndex].customFirstName = customFirstName;
   user.myPeople[friendIndex].customLastName = customLastName;

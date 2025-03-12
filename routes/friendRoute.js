@@ -320,6 +320,8 @@ const router = express.Router();
  *             type: object
  *             required:
  *               - friendId
+ *               - customFirstName
+ *               - customLastName
  *             properties:
  *               friendId:
  *                 type: string
