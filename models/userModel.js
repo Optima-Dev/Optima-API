@@ -53,26 +53,6 @@ const userSchema = new mongoose.Schema(
       },
     ],
 
-    myPeopleCallRequests: [
-      {
-        customFirstName: {
-          type: String,
-          required: [true, "First name is required"],
-          minlength: [2, "First name must be at least 2 characters"],
-        },
-        customLastName: {
-          type: String,
-          required: [true, "Last name is required"],
-          minlength: [2, "Last name must be at least 2 characters"],
-        },
-
-        user: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
-        },
-      },
-    ],
-
     resetPasswordCode: {
       type: String,
     },
@@ -103,6 +83,9 @@ userSchema.pre("save", async function (next) {
 userSchema.methods.comparePassword = async function (password) {
   return await bcrypt.compare(password, this.password);
 };
+
+userSchema.index({ email: 1 }, { unique: true, sparse: true });
+userSchema.index({ googleId: 1 }, { unique: true, sparse: true });
 
 const User = mongoose.model("User", userSchema);
 
