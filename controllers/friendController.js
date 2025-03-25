@@ -253,29 +253,37 @@ const editFriend = asyncHandler(async (req, res, next) => {
 });
 
 const getAllFriends = asyncHandler(async (req, res, next) => {
+  // First check if user exists
+  if (!req.user || !req.user._id) {
+    return next(new customError("User not found", 404));
+  }
+
   const user = await User.findById(req.user._id)
-    .populate("myPeople.user", "firstName lastName email") // Add fields you want to include
+    .populate("myPeople.user", "firstName lastName email")
     .exec();
 
-  const originalMyPeople = user.myPeople;
-  let notFoundFriends = [];
+  if (!user) {
+    return next(new customError("User not found", 404));
+  }
+
+  // Check if myPeople exists
+  if (!user.myPeople) {
+    user.myPeople = [];
+    await user.save();
+    return res.status(200).json({ friends: [] });
+  }
 
   // Filter out invalid references
-  user.myPeople = user.myPeople.filter((person) => {
-    if (!person.user) {
-      notFoundFriends.push(person.user);
-      return false;
-    }
-    return true;
-  });
+  const validFriends = user.myPeople.filter((person) => person && person.user);
 
-  // Save if any invalid references were found
-  if (notFoundFriends.length > 0) {
+  // If there were invalid references, update the user
+  if (validFriends.length !== user.myPeople.length) {
+    user.myPeople = validFriends;
     await user.save();
   }
 
   // Prepare response with populated data
-  const friends = user.myPeople.map((person) => ({
+  const friends = validFriends.map((person) => ({
     customFirstName: person.customFirstName,
     customLastName: person.customLastName,
     user: {
