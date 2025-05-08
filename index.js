@@ -8,6 +8,8 @@ import swaggerUi from "swagger-ui-express";
 import authRoute from "./routes/authRoute.js";
 import userRoute from "./routes/userRoute.js";
 import friendRequestRoute from "./routes/friendRoute.js";
+import meetingRoute from "./routes/meetingRoute.js";
+import cors from "cors";
 
 dotenv.config();
 
@@ -18,6 +20,9 @@ process.on("uncaughtException", (err) => {
 });
 
 const app = express();
+
+// CORS setup
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -47,8 +52,9 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 app.use("/api/auth", authRoute);
 app.use("/api/users", userRoute);
 app.use("/api/friends", friendRequestRoute);
+app.use("/api/meetings", meetingRoute);
 
-app.all("*", (req, res, next) => {
+app.get("*", (req, res, next) => {
   const err = new customError(
     `Can't find ${req.originalUrl} on this server!`,
     404
