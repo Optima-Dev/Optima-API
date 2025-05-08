@@ -459,18 +459,8 @@ router.post("/token", generateAccessToken);
 
 // Helper routes
 router.post("/reject", isAuthorized("helper"), rejectMeeting);
-router.post(
-  "/accept-specific-meeting",
-  isAuthenticated,
-  isAuthorized("helper"),
-  acceptSpecificMeeting
-);
-router.post(
-  "/accept-first-meeting",
-  isAuthenticated,
-  isAuthorized("helper"),
-  acceptFirstMeeting
-);
+router.post("/accept-specific", isAuthorized("helper"), acceptSpecificMeeting);
+router.post("/accept-first", isAuthorized("helper"), acceptFirstMeeting);
 router.get(
   "/pending-specific",
   isAuthorized("helper"),
@@ -478,7 +468,7 @@ router.get(
 );
 
 // Common routes (both seeker and helper)
-router.post("/end-meeting", isAuthenticated, endMeeting);
+router.post("/end", endMeeting);
 
 // Get a specific meeting (must be last to prevent conflicts with other routes)
 router.get("/:id", getMeeting);

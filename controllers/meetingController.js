@@ -61,6 +61,19 @@ const getMeeting = asyncHandler(async (req, res, next) => {
   if (!meeting) {
     return next(new customError("Meeting not found", 404));
   }
+
+  // Check if the current user is either the seeker or helper of this meeting
+  const userId = req.user._id.toString();
+  if (
+    userId !== meeting.seeker.toString() &&
+    meeting.type === "specific" &&
+    userId !== meeting.helper.toString()
+  ) {
+    return next(
+      new customError("You are not authorized to access this meeting", 403)
+    );
+  }
+
   res.status(200).json({
     status: "success",
     data: {
@@ -110,106 +123,50 @@ const generateAccessToken = asyncHandler(async (req, res, next) => {
     return next(new customError("Meeting not found", 404));
   }
 
-  if (identity === meeting.seeker.toString()) {
-    if (meeting.status === "ended") {
-      return next(new customError("Meeting has ended", 400));
-    }
-    if (meeting.status === "rejected") {
-      return next(new customError("Meeting has been rejected", 400));
-    }
+  // Check if user is authorized to join the meeting
+  const isSeeker = identity === meeting.seeker.toString();
+  const isHelper =
+    meeting.type === "specific" && identity === meeting.helper.toString();
+  const isGlobalHelper =
+    meeting.type === "global" && meeting.status === "pending";
 
-    const acccessToken = new AccessToken(
-      twilioAccountSid,
-      twilioApiKey,
-      twilioApiSecret,
-      {
-        identity: identity,
-      }
+  if (!isSeeker && !isHelper && !isGlobalHelper) {
+    return next(
+      new customError("You are not allowed to join this meeting", 403)
     );
-
-    const roomName = meetingId;
-    const videoGrant = new VideoGrant({
-      room: roomName,
-    });
-    acccessToken.addGrant(videoGrant);
-    const token = acccessToken.toJwt();
-
-    res.status(200).json({
-      status: "success",
-      data: {
-        token,
-        roomName,
-        identity,
-      },
-    });
   }
 
-  if (meeting.type === "specific") {
-    if (identity !== meeting.helper.toString()) {
-      return next(
-        new customError("You are not allowed to join this meeting", 403)
-      );
-    }
-
-    if (meeting.status === "ended") {
-      return next(new customError("Meeting has ended", 400));
-    }
-    if (meeting.status === "rejected") {
-      return next(new customError("Meeting has been rejected", 400));
-    }
-
-    const acccessToken = new AccessToken(
-      twilioAccountSid,
-      twilioApiKey,
-      twilioApiSecret,
-      {
-        identity: identity,
-      }
-    );
-
-    const roomName = meetingId;
-    const videoGrant = new VideoGrant({
-      room: roomName,
-    });
-    acccessToken.addGrant(videoGrant);
-
-    const token = acccessToken.toJwt();
-    res.status(200).json({
-      status: "success",
-      data: {
-        token,
-        roomName,
-        identity,
-      },
-    });
-  } else {
-    if (meeting.status !== "pending") {
-      return next(new customError("Meeting has ended", 400));
-    }
-
-    const acccessToken = new AccessToken(
-      twilioAccountSid,
-      twilioApiKey,
-      twilioApiSecret,
-      {
-        identity: identity,
-      }
-    );
-    const roomName = meetingId;
-    const videoGrant = new VideoGrant({
-      room: roomName,
-    });
-    acccessToken.addGrant(videoGrant);
-    const token = acccessToken.toJwt();
-    res.status(200).json({
-      status: "success",
-      data: {
-        token,
-        roomName,
-        identity,
-      },
-    });
+  // Check meeting status
+  if (meeting.status === "ended") {
+    return next(new customError("Meeting has ended", 400));
   }
+  if (meeting.status === "rejected") {
+    return next(new customError("Meeting has been rejected", 400));
+  }
+  if (meeting.type === "global" && meeting.status !== "pending") {
+    return next(new customError("Meeting is no longer available", 400));
+  }
+
+  // Generate token
+  const accessToken = new AccessToken(
+    twilioAccountSid,
+    twilioApiKey,
+    twilioApiSecret,
+    { identity }
+  );
+
+  const roomName = meetingId;
+  const videoGrant = new VideoGrant({ room: roomName });
+  accessToken.addGrant(videoGrant);
+
+  res.status(200).json({
+    status: "success",
+    data: {
+      token: accessToken.toJwt(),
+      roomName,
+      identity,
+    },
+  });
 });
 
 const rejectMeeting = asyncHandler(async (req, res, next) => {
