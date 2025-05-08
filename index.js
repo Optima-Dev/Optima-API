@@ -5,6 +5,7 @@ import globalErrorHandler from "./controllers/errorController.js";
 import connectDB from "./config/connect.js";
 import swaggerJSDoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
+import swaggerDocs from "./config/swagger.js";
 import authRoute from "./routes/authRoute.js";
 import userRoute from "./routes/userRoute.js";
 import friendRequestRoute from "./routes/friendRoute.js";
@@ -26,27 +27,6 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const swaggerOptions = {
-  definition: {
-    openapi: "3.0.0",
-    info: {
-      title: "Optima API",
-      version: "1.0.0",
-      description: "Optima API documentation",
-    },
-    servers: [
-      {
-        url: process.env.BASE_URL,
-      },
-      {
-        url: "http://localhost:3000",
-      },
-    ],
-  },
-  apis: ["./routes/*.js"],
-};
-
-const swaggerDocs = swaggerJSDoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 app.use("/api/auth", authRoute);
