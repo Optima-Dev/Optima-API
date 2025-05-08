@@ -10,6 +10,7 @@ import {
   endMeeting,
   getPendingSpecificMeetings,
   acceptFirstMeeting,
+  checkPendingTimeouts,
 } from "../controllers/meetingController.js";
 
 import {
@@ -472,5 +473,8 @@ router.post("/end", endMeeting);
 
 // Get a specific meeting (must be last to prevent conflicts with other routes)
 router.get("/:id", getMeeting);
+
+// Check for timed out pending meetings
+router.post("/check-pending-timeouts", checkPendingTimeouts);
 
 export default router;

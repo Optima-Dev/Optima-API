@@ -22,15 +22,49 @@ const meetingSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["pending", "accepted", "ended", "rejected"],
+      enum: ["pending", "accepted", "ended", "rejected", "timeout"],
       required: true,
       default: "pending",
+    },
+
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+
+    acceptedAt: {
+      type: Date,
+    },
+
+    endedAt: {
+      type: Date,
     },
   },
   {
     timestamps: true,
   }
 );
+
+// Method to check if meeting has timed out waiting for helper
+meetingSchema.methods.checkPendingTimeout = function () {
+  if (this.status === "pending") {
+    const waitingTime = Date.now() - this.createdAt;
+    return waitingTime > 5 * 60 * 1000; // 5 minutes in milliseconds
+  }
+  return false;
+};
+
+// Pre-save middleware to update timestamps
+meetingSchema.pre("save", function (next) {
+  if (this.isModified("status")) {
+    if (this.status === "accepted") {
+      this.acceptedAt = Date.now();
+    } else if (this.status === "ended") {
+      this.endedAt = Date.now();
+    }
+  }
+  next();
+});
 
 const Meeting = mongoose.model("Meeting", meetingSchema);
 

@@ -15,18 +15,35 @@ const twilioApiSecret = process.env.TWILIO_API_SECRET;
 const createMeeting = asyncHandler(async (req, res, next) => {
   const { type, helper } = req.body;
   const seeker = req.user._id;
-  if (!type) {
-    return next(new customError("Type is required", 400));
+
+  // Validate meeting type
+  if (!type || !["global", "specific"].includes(type)) {
+    return next(new customError("Invalid meeting type", 400));
+  }
+
+  // Check if seeker already has an active meeting
+  const existingMeeting = await Meeting.findOne({
+    seeker,
+    status: { $in: ["pending", "accepted"] },
+  });
+
+  if (existingMeeting) {
+    return next(new customError("You already have an active meeting", 400));
   }
 
   let meeting;
   if (type === "specific") {
     if (!helper) {
-      return next(new customError("Helper is required", 400));
+      return next(
+        new customError("Helper is required for specific meetings", 400)
+      );
     }
     const user = await User.findById(helper);
     if (!user) {
-      return next(new customError("User not found", 404));
+      return next(new customError("Helper not found", 404));
+    }
+    if (user.role !== "helper") {
+      return next(new customError("Specified user is not a helper", 400));
     }
     if (user._id.toString() === seeker.toString()) {
       return next(new customError("You cannot help yourself", 400));
@@ -123,6 +140,15 @@ const generateAccessToken = asyncHandler(async (req, res, next) => {
     return next(new customError("Meeting not found", 404));
   }
 
+  // Check if meeting has timed out waiting for helper
+  if (meeting.status === "pending" && meeting.checkPendingTimeout()) {
+    meeting.status = "timeout";
+    await meeting.save();
+    return next(
+      new customError("Meeting has timed out waiting for helper", 400)
+    );
+  }
+
   // Check if user is authorized to join the meeting
   const isSeeker = identity === meeting.seeker.toString();
   const isHelper =
@@ -137,7 +163,7 @@ const generateAccessToken = asyncHandler(async (req, res, next) => {
   }
 
   // Check meeting status
-  if (meeting.status === "ended") {
+  if (meeting.status === "ended" || meeting.status === "timeout") {
     return next(new customError("Meeting has ended", 400));
   }
   if (meeting.status === "rejected") {
@@ -228,6 +254,12 @@ const acceptSpecificMeeting = asyncHandler(async (req, res, next) => {
   if (!meetingId) {
     return next(new customError("Meeting ID is required", 400));
   }
+
+  // Validate meeting ID format
+  if (!mongoose.Types.ObjectId.isValid(meetingId)) {
+    return next(new customError("Invalid meeting ID format", 400));
+  }
+
   const meeting = await Meeting.findById(meetingId);
   if (!meeting) {
     return next(new customError("Meeting not found", 404));
@@ -255,6 +287,13 @@ const acceptSpecificMeeting = asyncHandler(async (req, res, next) => {
     return next(new customError("Meeting has already been accepted", 400));
   }
 
+  // Check if meeting has timed out
+  if (meeting.checkPendingTimeout()) {
+    meeting.status = "timeout";
+    await meeting.save();
+    return next(new customError("Meeting has timed out", 400));
+  }
+
   meeting.status = "accepted";
   await meeting.save();
 
@@ -278,7 +317,9 @@ const endMeeting = asyncHandler(async (req, res, next) => {
   if (meeting.status !== "accepted") {
     return next(new customError("Meeting has not been accepted", 400));
   }
+
   meeting.status = "ended";
+  meeting.endedAt = Date.now();
   await meeting.save();
 
   res.status(200).json({
@@ -287,6 +328,18 @@ const endMeeting = asyncHandler(async (req, res, next) => {
       meeting,
     },
   });
+});
+
+// Add a new function to check for timed out pending meetings
+const checkPendingTimeouts = asyncHandler(async () => {
+  const meetings = await Meeting.find({ status: "pending" });
+
+  for (const meeting of meetings) {
+    if (meeting.checkPendingTimeout()) {
+      meeting.status = "timeout";
+      await meeting.save();
+    }
+  }
 });
 
 export {
@@ -298,4 +351,5 @@ export {
   endMeeting,
   getPendingSpecificMeetings,
   acceptFirstMeeting,
+  checkPendingTimeouts,
 };
