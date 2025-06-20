@@ -28,7 +28,9 @@ const createMeeting = asyncHandler(async (req, res, next) => {
   });
 
   if (existingMeeting) {
-    return next(new customError("You already have an active meeting", 400));
+    existingMeeting.status = "ended";
+    existingMeeting.endedAt = Date.now();
+    await existingMeeting.save();
   }
 
   let meeting;
