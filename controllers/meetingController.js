@@ -131,6 +131,15 @@ const getPendingSpecificMeetings = asyncHandler(async (req, res, next) => {
 });
 
 const generateAccessToken = asyncHandler(async (req, res, next) => {
+  if (!twilioAccountSid || !twilioApiKey || !twilioApiSecret) {
+    return next(
+      new customError(
+        "Twilio credentials are not configured correctly. Please contact support.",
+        500
+      )
+    );
+  }
+
   const { meetingId } = req.body;
   if (!meetingId) {
     return next(new customError("Meeting ID is required", 400));
