@@ -402,53 +402,6 @@ import {
  *         description: Unauthorized
  */
 
-/**
- * @swagger
- * /api/meetings/accept-specific-seeker:
- *   post:
- *     summary: Accept a specific meeting request (seeker only)
- *     description: Allow a seeker to accept a specific meeting request
- *     tags: [Meetings]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - meetingId
- *             properties:
- *               meetingId:
- *                 type: string
- *                 description: ID of the meeting to accept
- *     responses:
- *       200:
- *         description: Meeting accepted successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: success
- *                 data:
- *                   type: object
- *                   properties:
- *                     meeting:
- *                       $ref: '#/components/schemas/Meeting'
- *       400:
- *         description: Invalid meeting ID, meeting already accepted, or user already in another meeting
- *       401:
- *         description: Unauthorized
- *       403:
- *         description: Not authorized to accept this meeting
- *       404:
- *         description: Meeting not found
- */
-
 // Base middleware for all routes
 router.use(isAuthenticated);
 
