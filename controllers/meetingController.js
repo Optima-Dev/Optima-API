@@ -13,13 +13,30 @@ const twilioApiKey = process.env.TWILIO_API_KEY;
 const twilioApiSecret = process.env.TWILIO_API_SECRET;
 
 const generateTokenForMeeting = asyncHandler(async (identity, meetingId) => {
-  if (!twilioAccountSid || !twilioApiKey || !twilioApiSecret) {
-    throw new customError(
-      "Twilio credentials are not configured correctly. Please contact support.",
-      500
-    );
+  // Create or get Twilio room with proper configuration
+  try {
+    const client = twilio(twilioAccountSid, twilioApiKey, twilioApiSecret);
+
+    // Try to get existing room
+    try {
+      await client.video.v1.rooms(meetingId).fetch();
+    } catch (error) {
+      // Room doesn't exist, create it with proper configuration
+      await client.video.v1.rooms.create({
+        uniqueName: meetingId,
+        emptyRoomTimeout: 180, // 3 minutes
+        maxRoomDuration: 180, // 3 minutes
+        unusedRoomTimeout: 180, // 3 minutes
+        maxParticipants: 2,
+        type: "peer-to-peer", // For 1-on-1 meetings
+      });
+    }
+  } catch (error) {
+    console.error("Error creating/getting Twilio room:", error);
+    throw new customError("Failed to create or get video room", 500);
   }
 
+  // Generate token
   const accessToken = new AccessToken(
     twilioAccountSid,
     twilioApiKey,
@@ -28,15 +45,8 @@ const generateTokenForMeeting = asyncHandler(async (identity, meetingId) => {
   );
   const videoGrant = new VideoGrant({
     room: meetingId,
-    // empty room timeout with 3 minutes
-    emptyRoomTimeout: 180,
-    // max room duration with 3 minutes
-    maxRoomDuration: 180,
-    // unused room timeout with 3 minutes
-    unusedRoomTimeout: 180,
-    // max participants with 2
-    maxParticipants: 2,
   });
+
   accessToken.addGrant(videoGrant);
   return accessToken.toJwt();
 });
@@ -332,7 +342,6 @@ const checkPendingTimeouts = asyncHandler(async () => {
 export {
   createMeeting,
   getMeeting,
-  generateAccessToken,
   rejectMeeting,
   acceptSpecificMeeting,
   endMeeting,

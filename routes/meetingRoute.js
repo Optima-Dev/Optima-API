@@ -4,7 +4,6 @@ const router = express.Router();
 import {
   createMeeting,
   getMeeting,
-  generateAccessToken,
   rejectMeeting,
   acceptSpecificMeeting,
   endMeeting,
@@ -381,9 +380,6 @@ router.use(isAuthenticated);
 
 // Create a new meeting (seeker only)
 router.post("/", isAuthorized("seeker"), createMeeting);
-
-// Generate token for joining a meeting
-router.post("/token", generateAccessToken);
 
 // Helper routes
 router.post("/reject", isAuthorized("helper"), rejectMeeting);
