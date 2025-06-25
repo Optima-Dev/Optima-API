@@ -26,7 +26,17 @@ const generateTokenForMeeting = asyncHandler(async (identity, meetingId) => {
     twilioApiSecret,
     { identity }
   );
-  const videoGrant = new VideoGrant({ room: meetingId });
+  const videoGrant = new VideoGrant({
+    room: meetingId,
+    // empty room timeout with 3 minutes
+    emptyRoomTimeout: 180,
+    // max room duration with 3 minutes
+    maxRoomDuration: 180,
+    // unused room timeout with 3 minutes
+    unusedRoomTimeout: 180,
+    // max participants with 2
+    maxParticipants: 2,
+  });
   accessToken.addGrant(videoGrant);
   return accessToken.toJwt();
 });
@@ -149,82 +159,6 @@ const getPendingSpecificMeetings = asyncHandler(async (req, res, next) => {
     status: "success",
     data: {
       meetings: editedMeetings,
-    },
-  });
-});
-
-const generateAccessToken = asyncHandler(async (req, res, next) => {
-  if (!twilioAccountSid || !twilioApiKey || !twilioApiSecret) {
-    return next(
-      new customError(
-        "Twilio credentials are not configured correctly. Please contact support.",
-        500
-      )
-    );
-  }
-
-  const { meetingId } = req.body;
-  if (!meetingId) {
-    return next(new customError("Meeting ID is required", 400));
-  }
-
-  const identity = req.user._id.toString();
-  const meeting = await Meeting.findById(meetingId);
-  if (!meeting) {
-    return next(new customError("Meeting not found", 404));
-  }
-
-  // Check if meeting has timed out waiting for helper
-  if (meeting.status === "pending" && meeting.checkPendingTimeout()) {
-    meeting.status = "timeout";
-    await meeting.save();
-    return next(
-      new customError("Meeting has timed out waiting for helper", 400)
-    );
-  }
-
-  // Check if user is authorized to join the meeting
-  const isSeeker = identity === meeting.seeker.toString();
-  const isHelper =
-    meeting.type === "specific" && identity === meeting.helper.toString();
-  const isGlobalHelper =
-    meeting.type === "global" && meeting.status === "pending";
-
-  if (!isSeeker && !isHelper && !isGlobalHelper) {
-    return next(
-      new customError("You are not allowed to join this meeting", 403)
-    );
-  }
-
-  // Check meeting status
-  if (meeting.status === "ended" || meeting.status === "timeout") {
-    return next(new customError("Meeting has ended", 400));
-  }
-  if (meeting.status === "rejected") {
-    return next(new customError("Meeting has been rejected", 400));
-  }
-  if (meeting.type === "global" && meeting.status !== "pending") {
-    return next(new customError("Meeting is no longer available", 400));
-  }
-
-  // Generate token
-  const accessToken = new AccessToken(
-    twilioAccountSid,
-    twilioApiKey,
-    twilioApiSecret,
-    { identity }
-  );
-
-  const roomName = meetingId;
-  const videoGrant = new VideoGrant({ room: roomName });
-  accessToken.addGrant(videoGrant);
-
-  res.status(200).json({
-    status: "success",
-    data: {
-      token: accessToken.toJwt(),
-      roomName,
-      identity,
     },
   });
 });
