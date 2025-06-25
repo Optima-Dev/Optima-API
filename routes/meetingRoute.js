@@ -97,8 +97,18 @@ import {
  *                 data:
  *                   type: object
  *                   properties:
- *                     meeting:
- *                       $ref: '#/components/schemas/Meeting'
+ *                     token:
+ *                       type: string
+ *                       description: JWT token for joining the video meeting
+ *                       example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *                     roomName:
+ *                       type: string
+ *                       description: Room name for the video meeting (same as meeting ID)
+ *                       example: "65f47a8cde3a6e7b5a1c9b94"
+ *                     identity:
+ *                       type: string
+ *                       description: User identity for the video meeting
+ *                       example: "65f47a8cde3a6e7b5a1c9b91"
  *       400:
  *         description: Invalid input or helper not found
  *       401:
@@ -140,54 +150,6 @@ import {
  *         description: Meeting not found
  *       401:
  *         description: Unauthorized
- */
-
-/**
- * @swagger
- * /api/meetings/token:
- *   post:
- *     summary: Generate access token for joining a meeting
- *     tags: [Meetings]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - meetingId
- *             properties:
- *               meetingId:
- *                 type: string
- *                 description: ID of the meeting to join
- *     responses:
- *       200:
- *         description: Token generated successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: success
- *                 data:
- *                   type: object
- *                   properties:
- *                     token:
- *                       type: string
- *                     roomName:
- *                       type: string
- *                     identity:
- *                       type: string
- *       400:
- *         description: Invalid meeting ID or meeting has ended
- *       401:
- *         description: Unauthorized
- *       403:
- *         description: Not allowed to join this meeting
  */
 
 /**
@@ -298,12 +260,24 @@ import {
  *                 data:
  *                   type: object
  *                   properties:
- *                     meeting:
- *                       $ref: '#/components/schemas/Meeting'
+ *                     token:
+ *                       type: string
+ *                       description: JWT token for joining the video meeting
+ *                       example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *                     roomName:
+ *                       type: string
+ *                       description: Room name for the video meeting (same as meeting ID)
+ *                       example: "65f47a8cde3a6e7b5a1c9b94"
+ *                     identity:
+ *                       type: string
+ *                       description: User identity for the video meeting
+ *                       example: "65f47a8cde3a6e7b5a1c9b91"
  *       404:
  *         description: No pending meetings available
  *       401:
  *         description: Unauthorized
+ *       403:
+ *         description: Not authorized to accept meetings
  */
 
 /**

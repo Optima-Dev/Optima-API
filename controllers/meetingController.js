@@ -12,6 +12,25 @@ const twilioAccountSid = process.env.TWILIO_ACCOUNT_SID;
 const twilioApiKey = process.env.TWILIO_API_KEY;
 const twilioApiSecret = process.env.TWILIO_API_SECRET;
 
+const generateTokenForMeeting = asyncHandler(async (identity, meetingId) => {
+  if (!twilioAccountSid || !twilioApiKey || !twilioApiSecret) {
+    throw new customError(
+      "Twilio credentials are not configured correctly. Please contact support.",
+      500
+    );
+  }
+
+  const accessToken = new AccessToken(
+    twilioAccountSid,
+    twilioApiKey,
+    twilioApiSecret,
+    { identity }
+  );
+  const videoGrant = new VideoGrant({ room: meetingId });
+  accessToken.addGrant(videoGrant);
+  return accessToken.toJwt();
+});
+
 const createMeeting = asyncHandler(async (req, res, next) => {
   const { type, helper } = req.body;
   const seeker = req.user._id;
@@ -63,10 +82,14 @@ const createMeeting = asyncHandler(async (req, res, next) => {
   }
 
   await meeting.save();
+  const token = await generateTokenForMeeting(seeker, meeting._id);
+
   res.status(201).json({
     status: "success",
     data: {
-      meeting,
+      token,
+      roomName: meeting._id,
+      identity: seeker,
     },
   });
 });
@@ -243,6 +266,19 @@ const rejectMeeting = asyncHandler(async (req, res, next) => {
 });
 
 const acceptFirstMeeting = asyncHandler(async (req, res, next) => {
+  if (req.user.role !== "helper") {
+    return next(
+      new customError("You are not authorized to accept meetings", 403)
+    );
+  }
+
+  const helper = await User.findById(req.user._id);
+  if (!helper) {
+    return next(new customError("Helper not found", 404));
+  }
+
+  const helperId = req.user._id;
+
   const meetings = await Meeting.find({
     status: "pending",
     type: "global",
@@ -254,9 +290,15 @@ const acceptFirstMeeting = asyncHandler(async (req, res, next) => {
   meeting.status = "accepted";
   await meeting.save();
 
+  const token = await generateTokenForMeeting(helperId, meeting._id);
+
   res.status(200).json({
     status: "success",
-    data: { meeting },
+    data: {
+      token,
+      roomName: meeting._id,
+      identity: helperId,
+    },
   });
 });
 
