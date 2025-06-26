@@ -323,6 +323,20 @@ const endMeeting = asyncHandler(async (req, res, next) => {
   });
 });
 
+const getGlobalMeetings = asyncHandler(async (req, res, next) => {
+  const meetings = await Meeting.find({
+    type: "global",
+    status: "pending",
+  });
+
+  res.status(200).json({
+    status: "success",
+    data: {
+      meetings,
+    },
+  });
+});
+
 // Add a new function to check for timed out pending meetings
 const checkPendingTimeouts = asyncHandler(async () => {
   const meetings = await Meeting.find({ status: "pending" });
@@ -338,6 +352,7 @@ const checkPendingTimeouts = asyncHandler(async () => {
 export {
   createMeeting,
   getMeeting,
+  getGlobalMeetings,
   rejectMeeting,
   acceptSpecificMeeting,
   endMeeting,

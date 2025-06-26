@@ -10,6 +10,7 @@ import {
   getPendingSpecificMeetings,
   acceptFirstMeeting,
   checkPendingTimeouts,
+  getGlobalMeetings,
 } from "../controllers/meetingController.js";
 
 import {
@@ -375,11 +376,42 @@ import {
  *         description: Unauthorized
  */
 
+/**
+ * @swagger
+ * /api/meetings/global:
+ *   get:
+ *     summary: Get all pending global meetings
+ *     tags: [Meetings]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of pending global meetings retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     meetings:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Meeting'
+ *       401:
+ *         description: Unauthorized
+ */
+
 // Base middleware for all routes
 router.use(isAuthenticated);
 
 // Create a new meeting (seeker only)
 router.post("/", isAuthorized("seeker"), createMeeting);
+router.get("/global", isAuthorized("helper"), getGlobalMeetings);
 
 // Helper routes
 router.post("/reject", isAuthorized("helper"), rejectMeeting);
