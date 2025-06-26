@@ -13,27 +13,64 @@ const twilioApiKey = process.env.TWILIO_API_KEY;
 const twilioApiSecret = process.env.TWILIO_API_SECRET;
 
 const generateTokenForMeeting = asyncHandler(async (identity, meetingId) => {
+  // Validate Twilio credentials first
+  if (!twilioAccountSid || !twilioApiKey || !twilioApiSecret) {
+    console.error("Missing Twilio credentials:", {
+      accountSid: !!twilioAccountSid,
+      apiKey: !!twilioApiKey,
+      apiSecret: !!twilioApiSecret,
+    });
+    throw new customError("Twilio credentials not configured", 500);
+  }
+
   // Create or get Twilio room with proper configuration
   try {
     const client = twilio(twilioAccountSid, twilioApiKey, twilioApiSecret);
 
+    // Test authentication by trying to list rooms
+    try {
+      await client.video.v1.rooms.list({ limit: 1 });
+    } catch (authError) {
+      console.error("Twilio authentication failed:", authError.message);
+      throw new customError(
+        "Twilio authentication failed. Please check your credentials.",
+        500
+      );
+    }
+
     // Try to get existing room
     try {
       await client.video.v1.rooms(meetingId).fetch();
+      console.log(`Room ${meetingId} already exists`);
     } catch (error) {
-      // Room doesn't exist, create it with proper configuration
-      await client.video.v1.rooms.create({
-        uniqueName: meetingId,
-        emptyRoomTimeout: 180, // 3 minutes
-        maxRoomDuration: 180, // 3 minutes
-        unusedRoomTimeout: 180, // 3 minutes
-        maxParticipants: 2,
-        type: "peer-to-peer", // For 1-on-1 meetings
-      });
+      if (error.code === 20404) {
+        // Room doesn't exist, create it with proper configuration
+        console.log(`Creating new room ${meetingId}`);
+        await client.video.v1.rooms.create({
+          uniqueName: meetingId,
+          emptyRoomTimeout: 180, // 3 minutes
+          maxRoomDuration: 180, // 3 minutes
+          unusedRoomTimeout: 180, // 3 minutes
+          maxParticipants: 2,
+          type: "peer-to-peer", // For 1-on-1 meetings
+        });
+        console.log(`Room ${meetingId} created successfully`);
+      } else {
+        throw error;
+      }
     }
   } catch (error) {
     console.error("Error creating/getting Twilio room:", error);
-    throw new customError("Failed to create or get video room", 500);
+    if (error.code === 20003) {
+      throw new customError(
+        "Twilio authentication failed. Please check your API credentials.",
+        500
+      );
+    } else if (error.code === 20008) {
+      throw new customError("Twilio account suspended or inactive.", 500);
+    } else {
+      throw new customError(`Twilio error: ${error.message}`, 500);
+    }
   }
 
   // Generate token
