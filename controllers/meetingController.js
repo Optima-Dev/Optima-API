@@ -13,26 +13,12 @@ const twilioApiKey = process.env.TWILIO_API_KEY;
 const twilioApiSecret = process.env.TWILIO_API_SECRET;
 
 const generateTokenForMeeting = asyncHandler(async (identity, meetingId) => {
-  // Create or get Twilio room with proper configuration
-  const client = twilio(twilioApiKey, twilioApiSecret, {
-    accountSid: twilioAccountSid,
-  });
+  if (!twilioAccountSid || !twilioApiKey || !twilioApiSecret) {
+    return next(new customError("Twilio credentials are not set", 500));
+  }
 
-  // console.log(client);
-
-  // // Try to get existing room
-  try {
-    await client.video.v1.rooms(meetingId).fetch();
-  } catch (error) {
-    // console.log("error hereeee");
-    // console.log(error);
-    // // Room doesn't exist, create it with proper configuration
-    await client.video.v1.rooms.create({
-      uniqueName: meetingId,
-      emptyRoomTimeout: 2,
-      unusedRoomTimeout: 1,
-      maxParticipants: 2,
-    });
+  if (!identity || !meetingId) {
+    return next(new customError("Identity and meeting ID are required", 400));
   }
 
   // Generate token
