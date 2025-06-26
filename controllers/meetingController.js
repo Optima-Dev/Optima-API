@@ -310,9 +310,6 @@ const endMeeting = asyncHandler(async (req, res, next) => {
   if (!meeting) {
     return next(new customError("Meeting not found", 404));
   }
-  if (meeting.status !== "accepted") {
-    return next(new customError("Meeting has not been accepted", 400));
-  }
 
   meeting.status = "ended";
   meeting.endedAt = Date.now();
