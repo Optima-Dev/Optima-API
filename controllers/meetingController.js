@@ -14,11 +14,11 @@ const twilioApiSecret = process.env.TWILIO_API_SECRET;
 
 const generateTokenForMeeting = asyncHandler(async (identity, meetingId) => {
   if (!twilioAccountSid || !twilioApiKey || !twilioApiSecret) {
-    return next(new customError("Twilio credentials are not set", 500));
+    throw new customError("Twilio credentials are not set", 500);
   }
 
   if (!identity || !meetingId) {
-    return next(new customError("Identity and meeting ID are required", 400));
+    throw new customError("Identity and meeting ID are required", 400);
   }
 
   // Generate token
@@ -87,14 +87,14 @@ const createMeeting = asyncHandler(async (req, res, next) => {
   }
 
   await meeting.save();
-  const token = await generateTokenForMeeting(seeker, meeting._id);
+  const token = await generateTokenForMeeting(seeker.toString(), meeting._id);
 
   res.status(201).json({
     status: "success",
     data: {
       token,
       roomName: meeting._id,
-      identity: seeker,
+      identity: seeker.toString(),
     },
   });
 });
@@ -219,14 +219,14 @@ const acceptFirstMeeting = asyncHandler(async (req, res, next) => {
   meeting.status = "accepted";
   await meeting.save();
 
-  const token = await generateTokenForMeeting(helperId, meeting._id);
+  const token = await generateTokenForMeeting(helperId.toString(), meeting._id);
 
   res.status(200).json({
     status: "success",
     data: {
       token,
       roomName: meeting._id,
-      identity: helperId,
+      identity: helperId.toString(),
     },
   });
 });
