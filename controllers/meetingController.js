@@ -21,6 +21,22 @@ const generateTokenForMeeting = asyncHandler(async (identity, meetingId) => {
     throw new customError("Identity and meeting ID are required", 400);
   }
 
+  const client = twilio(twilioApiKey, twilioApiSecret, {
+    accountSid: twilioAccountSid,
+  });
+
+  // if the room is not created, create it
+  try {
+    await client.video.v1.rooms(meetingId).fetch();
+  } catch (error) {
+    await client.video.v1.rooms.create({
+      uniqueName: meetingId,
+      emptyRoomTimeout: 2,
+      unusedRoomTimeout: 1,
+      maxParticipants: 2,
+    });
+  }
+
   // Generate token
   const accessToken = new AccessToken(
     twilioAccountSid,
