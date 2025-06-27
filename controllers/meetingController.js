@@ -270,17 +270,6 @@ const acceptSpecificMeeting = asyncHandler(async (req, res, next) => {
     );
   }
 
-  // Check if the current user is in another meeting with status accepted
-  const currentUser = req.user._id.toString();
-  const existingMeeting = await Meeting.findOne({
-    helper: currentUser,
-    status: "accepted",
-  });
-
-  if (existingMeeting) {
-    return next(new customError("You are already in another meeting", 400));
-  }
-
   if (meeting.status !== "pending") {
     return next(new customError("Meeting has already been accepted", 400));
   }
@@ -295,10 +284,15 @@ const acceptSpecificMeeting = asyncHandler(async (req, res, next) => {
   meeting.status = "accepted";
   await meeting.save();
 
+  const helperId = req.user._id;
+  const token = await generateTokenForMeeting(helperId.toString(), meeting._id);
+
   res.status(200).json({
     status: "success",
     data: {
-      meeting,
+      token,
+      roomName: meeting._id,
+      identity: helperId.toString(),
     },
   });
 });
