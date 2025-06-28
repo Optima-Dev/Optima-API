@@ -4,6 +4,7 @@ const router = express.Router();
 import {
   createMeeting,
   getMeeting,
+  createMeetingAgora,
   rejectMeeting,
   acceptSpecificMeeting,
   endMeeting,
@@ -406,11 +407,68 @@ import {
  *         description: Unauthorized
  */
 
+/**
+ * @swagger
+ * /api/meetings/agora:
+ *   post:
+ *     summary: Create a new meeting for agora
+ *     tags: [Meetings]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - type
+ *             properties:
+ *               type:
+ *                 type: string
+ *                 enum: [global, specific]
+ *                 description: Type of meeting (global for any helper, specific for a particular helper)
+ *               helper:
+ *                 type: string
+ *                 description: Required if type is specific, the ID of the helper to join the meeting
+ *     responses:
+ *       201:
+ *         description: Meeting created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     token:
+ *                       type: string
+ *                       description: JWT token for joining the video meeting
+ *                       example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *                     roomName:
+ *                       type: string
+ *                       description: Room name for the video meeting (same as meeting ID)
+ *                       example: "65f47a8cde3a6e7b5a1c9b94"
+ *                     identity:
+ *                       type: string
+ *                       description: User identity for the video meeting
+ *                       example: "65f47a8cde3a6e7b5a1c9b91"
+ *       400:
+ *         description: Invalid input or helper not found
+ *       401:
+ *         description: Unauthorized
+ */
+
 // Base middleware for all routes
 router.use(isAuthenticated);
 
 // Create a new meeting (seeker only)
 router.post("/", isAuthorized("seeker"), createMeeting);
+router.post("/agora", isAuthorized("seeker"), createMeetingAgora);
 router.get("/global", isAuthorized("helper"), getGlobalMeetings);
 
 // Helper routes

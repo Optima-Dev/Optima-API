@@ -4,6 +4,8 @@ import mongoose from "mongoose";
 import asyncHandler from "express-async-handler";
 import customError from "../utils/customError.js";
 import twilio from "twilio";
+import { RtcTokenBuilder } from "agora-access-token";
+import { CallPage } from "twilio/lib/rest/api/v2010/account/call.js";
 
 const AccessToken = twilio.jwt.AccessToken;
 const VideoGrant = AccessToken.VideoGrant;
@@ -11,6 +13,9 @@ const VideoGrant = AccessToken.VideoGrant;
 const twilioAccountSid = process.env.TWILIO_ACCOUNT_SID;
 const twilioApiKey = process.env.TWILIO_API_KEY;
 const twilioApiSecret = process.env.TWILIO_API_SECRET;
+
+const agoraAppId = process.env.AGORA_APP_ID;
+const agoraAppCertificate = process.env.AGORA_APP_CERTIFICATE;
 
 const generateTokenForMeeting = asyncHandler(async (identity, meetingId) => {
   if (!twilioAccountSid || !twilioApiKey || !twilioApiSecret) {
@@ -104,6 +109,84 @@ const createMeeting = asyncHandler(async (req, res, next) => {
 
   await meeting.save();
   const token = await generateTokenForMeeting(seeker.toString(), meeting._id);
+
+  res.status(201).json({
+    status: "success",
+    data: {
+      token,
+      roomName: meeting._id,
+      identity: seeker.toString(),
+    },
+  });
+});
+
+const createMeetingAgora = asyncHandler(async (req, res, next) => {
+  const { type, helper } = req.body;
+  const seeker = req.user._id;
+  // console.log(req.body);
+
+  // Validate meeting type
+  if (!type || !["global", "specific"].includes(type)) {
+    return next(new customError("Invalid meeting type", 400));
+  }
+
+  // Check if seeker already has an active meeting
+  const existingMeeting = await Meeting.findOne({
+    seeker,
+    status: { $in: ["pending", "accepted"] },
+  });
+
+  if (existingMeeting) {
+    existingMeeting.status = "ended";
+    existingMeeting.endedAt = Date.now();
+    await existingMeeting.save();
+  }
+
+  let meeting;
+  if (type === "specific") {
+    if (!helper) {
+      return next(
+        new customError("Helper is required for specific meetings", 400)
+      );
+    }
+    const user = await User.findById(helper);
+    if (!user) {
+      return next(new customError("Helper not found", 404));
+    }
+    if (user.role !== "helper") {
+      return next(new customError("Specified user is not a helper", 400));
+    }
+    if (user._id.toString() === seeker.toString()) {
+      return next(new customError("You cannot help yourself", 400));
+    }
+    meeting = new Meeting({
+      seeker,
+      type,
+      helper,
+    });
+  } else {
+    meeting = new Meeting({
+      seeker,
+      type,
+    });
+  }
+
+  await meeting.save();
+  const role = 1;
+  const expirationTimeInSeconds = 3600;
+  const currentTimestamp = Math.floor(Date.now() / 1000);
+  const privilegeExpiredTs = currentTimestamp + expirationTimeInSeconds;
+
+  const token = RtcTokenBuilder.buildTokenWithUid(
+    agoraAppId,
+    agoraAppCertificate,
+    meeting._id,
+    seeker.toString(),
+    role,
+    privilegeExpiredTs
+  );
+
+  // console.log(token);
 
   res.status(201).json({
     status: "success",
@@ -348,6 +431,7 @@ const checkPendingTimeouts = asyncHandler(async () => {
 export {
   createMeeting,
   getMeeting,
+  createMeetingAgora,
   getGlobalMeetings,
   rejectMeeting,
   acceptSpecificMeeting,
