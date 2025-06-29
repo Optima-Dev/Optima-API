@@ -178,7 +178,9 @@ const createMeetingAgora = asyncHandler(async (req, res, next) => {
   const currentTimestamp = Math.floor(Date.now() / 1000);
   const privilegeExpiredTs = currentTimestamp + expirationTimeInSeconds;
 
-  const token = RtcTokenBuilder.buildTokenWithUid(
+  console.log(currentTimestamp, privilegeExpiredTs);
+
+  const token = RtcTokenBuilder.buildTokenWithAccount(
     agoraAppId,
     agoraAppCertificate,
     meeting._id.toString(), // Channel name (use meeting ID as channel name)
@@ -186,6 +188,8 @@ const createMeetingAgora = asyncHandler(async (req, res, next) => {
     role,
     privilegeExpiredTs
   );
+
+  console.log(token);
 
   console.log(`Agora channel created: ${meeting._id.toString()}`);
 
