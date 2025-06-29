@@ -25,86 +25,6 @@ const router = express.Router();
 
 /**
  * @swagger
- * /api/friends/requests:
- *   get:
- *     summary: Get all friend requests
- *     tags: [Friends]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: List of friend requests
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   _id:
- *                     type: string
- *                     example: "5f8d0d55b54764421b7156da"
- *                   seekerId:
- *                     type: string
- *                     example: "5f8d0d55b54764421b7156db"
- *                   firstName:
- *                     type: string
- *                     example: "John"
- *                   lastName:
- *                     type: string
- *                     example: "Doe"
- *                   email:
- *                     type: string
- *                     example: "user@example.com"
- */
-
-/**
- * @swagger
- * /api/friends/all:
- *   get:
- *     summary: Get all friends with user details
- *     tags: [Friends]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: List of friends with populated user details
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 friends:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       customFirstName:
- *                         type: string
- *                         example: "Bestie"
- *                       customLastName:
- *                         type: string
- *                         example: "Smith"
- *                       user:
- *                         type: object
- *                         properties:
- *                           _id:
- *                             type: string
- *                             example: "5f8d0d55b54764421b7156da"
- *                           firstName:
- *                             type: string
- *                             example: "John"
- *                           lastName:
- *                             type: string
- *                             example: "Doe"
- *                           email:
- *                             type: string
- *                             format: email
- *                             example: "john.doe@example.com"
- */
-
-/**
- * @swagger
  * /api/friends/send:
  *   post:
  *     summary: Send friend request
@@ -302,6 +222,86 @@ const router = express.Router();
  *               message:
  *                type: string
  *                example: Friend not found!
+ */
+
+/**
+ * @swagger
+ * /api/friends/requests:
+ *   get:
+ *     summary: Get all friend requests
+ *     tags: [Friends]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of friend requests
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   _id:
+ *                     type: string
+ *                     example: "5f8d0d55b54764421b7156da"
+ *                   seekerId:
+ *                     type: string
+ *                     example: "5f8d0d55b54764421b7156db"
+ *                   firstName:
+ *                     type: string
+ *                     example: "John"
+ *                   lastName:
+ *                     type: string
+ *                     example: "Doe"
+ *                   email:
+ *                     type: string
+ *                     example: "user@example.com"
+ */
+
+/**
+ * @swagger
+ * /api/friends/all:
+ *   get:
+ *     summary: Get all friends with user details
+ *     tags: [Friends]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of friends with populated user details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 friends:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       customFirstName:
+ *                         type: string
+ *                         example: "Bestie"
+ *                       customLastName:
+ *                         type: string
+ *                         example: "Smith"
+ *                       user:
+ *                         type: object
+ *                         properties:
+ *                           _id:
+ *                             type: string
+ *                             example: "5f8d0d55b54764421b7156da"
+ *                           firstName:
+ *                             type: string
+ *                             example: "John"
+ *                           lastName:
+ *                             type: string
+ *                             example: "Doe"
+ *                           email:
+ *                             type: string
+ *                             format: email
+ *                             example: "john.doe@example.com"
  */
 
 /**

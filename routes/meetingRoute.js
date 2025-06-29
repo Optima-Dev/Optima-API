@@ -120,43 +120,6 @@ import {
 
 /**
  * @swagger
- * /api/meetings/{id}:
- *   get:
- *     summary: Get meeting details
- *     tags: [Meetings]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: Meeting ID
- *     responses:
- *       200:
- *         description: Meeting details retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: success
- *                 data:
- *                   type: object
- *                   properties:
- *                     meeting:
- *                       $ref: '#/components/schemas/Meeting'
- *       404:
- *         description: Meeting not found
- *       401:
- *         description: Unauthorized
- */
-
-/**
- * @swagger
  * /api/meetings/reject:
  *   post:
  *     summary: Reject a specific meeting request
@@ -331,60 +294,6 @@ import {
 
 /**
  * @swagger
- * /api/meetings/pending-specific:
- *   get:
- *     summary: Get all pending specific meetings for the current helper
- *     tags: [Meetings]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: List of pending specific meetings with seeker names
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: success
- *                 data:
- *                   type: object
- *                   properties:
- *                     meetings:
- *                       type: array
- *                       items:
- *                         type: object
- *                         properties:
- *                           _id:
- *                             type: string
- *                           seeker:
- *                             type: string
- *                             description: ID of the seeker
- *                           seekerName:
- *                             type: string
- *                             description: Full name of the seeker (customFirstName + customLastName)
- *                           type:
- *                             type: string
- *                             enum: [global, specific]
- *                           helper:
- *                             type: string
- *                             description: ID of the helper
- *                           status:
- *                             type: string
- *                             enum: [pending, accepted, ended, rejected]
- *                           createdAt:
- *                             type: string
- *                             format: date-time
- *                           updatedAt:
- *                             type: string
- *                             format: date-time
- *       401:
- *         description: Unauthorized
- */
-
-/**
- * @swagger
  * /api/meetings/end:
  *   post:
  *     summary: End an ongoing meeting
@@ -421,36 +330,6 @@ import {
  *                       $ref: '#/components/schemas/Meeting'
  *       400:
  *         description: Invalid meeting ID or meeting not accepted
- *       401:
- *         description: Unauthorized
- */
-
-/**
- * @swagger
- * /api/meetings/global:
- *   get:
- *     summary: Get all pending global meetings
- *     tags: [Meetings]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: List of pending global meetings retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: success
- *                 data:
- *                   type: object
- *                   properties:
- *                     meetings:
- *                       type: array
- *                       items:
- *                         $ref: '#/components/schemas/Meeting'
  *       401:
  *         description: Unauthorized
  */
@@ -511,6 +390,142 @@ import {
  *                       example: "65f47a8cde3a6e7b5a1c9b91"
  *       400:
  *         description: Invalid input or helper not found
+ *       401:
+ *         description: Unauthorized
+ */
+
+/**
+ * @swagger
+ * /api/meetings/accept-agora-specific:
+ *   post:
+ *     summary: Accept a specific meeting request for agora
+ *     tags: [Meetings]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - meetingId
+ *             properties:
+ * /api/meetings/{id}:
+ *   get:
+ *     summary: Get meeting details
+ *     tags: [Meetings]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Meeting ID
+ *     responses:
+ *       200:
+ *         description: Meeting details retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     meeting:
+ *                       $ref: '#/components/schemas/Meeting'
+ *       404:
+ *         description: Meeting not found
+ *       401:
+ *         description: Unauthorized
+ */
+
+/**
+ * @swagger
+ * /api/meetings/pending-specific:
+ *   get:
+ *     summary: Get all pending specific meetings for the current helper
+ *     tags: [Meetings]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of pending specific meetings with seeker names
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     meetings:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           _id:
+ *                             type: string
+ *                           seeker:
+ *                             type: string
+ *                             description: ID of the seeker
+ *                           seekerName:
+ *                             type: string
+ *                             description: Full name of the seeker (customFirstName + customLastName)
+ *                           type:
+ *                             type: string
+ *                             enum: [global, specific]
+ *                           helper:
+ *                             type: string
+ *                             description: ID of the helper
+ *                           status:
+ *                             type: string
+ *                             enum: [pending, accepted, ended, rejected]
+ *                           createdAt:
+ *                             type: string
+ *                             format: date-time
+ *                           updatedAt:
+ *                             type: string
+ *                             format: date-time
+ *       401:
+ *         description: Unauthorized
+ */
+
+/**
+ * @swagger
+ * /api/meetings/global:
+ *   get:
+ *     summary: Get all pending global meetings
+ *     tags: [Meetings]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of pending global meetings retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     meetings:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Meeting'
  *       401:
  *         description: Unauthorized
  */
