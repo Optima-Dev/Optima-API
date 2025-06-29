@@ -444,6 +444,73 @@ const acceptSpecificMeeting = asyncHandler(async (req, res, next) => {
   });
 });
 
+const acceptSpecificMeetingAgora = asyncHandler(async (req, res, next) => {
+  const { meetingId } = req.body;
+  if (!meetingId) {
+    return next(new customError("Meeting ID is required", 400));
+  }
+
+  // Validate meeting ID format
+  if (!mongoose.Types.ObjectId.isValid(meetingId)) {
+    return next(new customError("Invalid meeting ID format", 400));
+  }
+
+  const meeting = await Meeting.findById(meetingId);
+  if (!meeting) {
+    return next(new customError("Meeting not found", 404));
+  }
+
+  // Check if the current user is the helper of this meeting
+  if (meeting.helper.toString() !== req.user._id.toString()) {
+    return next(
+      new customError("You are not authorized to accept this meeting", 403)
+    );
+  }
+
+  if (meeting.status !== "pending") {
+    return next(new customError("Meeting has already been accepted", 400));
+  }
+
+  // Check if meeting has timed out
+  if (meeting.checkPendingTimeout()) {
+    meeting.status = "timeout";
+    await meeting.save();
+    return next(new customError("Meeting has timed out", 400));
+  }
+
+  meeting.status = "accepted";
+  await meeting.save();
+
+  const helperId = req.user._id;
+
+  const role = 1; // 1 for publisher, 2 for subscriber
+  const expirationTimeInSeconds = 3600;
+  const currentTimestamp = Math.floor(Date.now() / 1000);
+  const privilegeExpiredTs = currentTimestamp + expirationTimeInSeconds;
+
+  // generate a random uid number
+  const uid = Math.floor(100000 + Math.random() * 900000);
+
+  const token = RtcTokenBuilder.buildTokenWithAccount(
+    agoraAppId,
+    agoraAppCertificate,
+    meeting._id.toString(), // Channel name (use meeting ID as channel name)
+    uid, // User ID
+    role,
+    privilegeExpiredTs
+  );
+
+  res.status(200).json({
+    status: "success",
+    data: {
+      token,
+      channelName: meeting._id.toString(), // Agora uses channelName, not roomName
+      uid: uid, // Agora uses uid, not identity
+      appId: agoraAppId, // Frontend needs this
+    },
+  });
+});
+
 const endMeeting = asyncHandler(async (req, res, next) => {
   const { meetingId } = req.body;
   if (!meetingId) {
@@ -504,4 +571,5 @@ export {
   getPendingSpecificMeetings,
   acceptFirstMeeting,
   checkPendingTimeouts,
+  acceptSpecificMeetingAgora,
 };

@@ -13,6 +13,7 @@ import {
   checkPendingTimeouts,
   getGlobalMeetings,
   acceptMeetingAgora,
+  acceptSpecificMeetingAgora,
 } from "../controllers/meetingController.js";
 
 import {
@@ -527,6 +528,11 @@ router.post("/reject", isAuthorized("helper"), rejectMeeting);
 router.post("/accept-specific", isAuthorized("helper"), acceptSpecificMeeting);
 router.post("/accept-first", isAuthorized("helper"), acceptFirstMeeting);
 router.post("/accept-agora", isAuthorized("helper"), acceptMeetingAgora);
+router.post(
+  "/accept-agora-specific",
+  isAuthorized("helper"),
+  acceptSpecificMeetingAgora
+);
 router.get(
   "/pending-specific",
   isAuthorized("helper"),
