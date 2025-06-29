@@ -449,13 +449,17 @@ import {
  *                       type: string
  *                       description: JWT token for joining the video meeting
  *                       example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
- *                     roomName:
+ *                     channelName:
  *                       type: string
- *                       description: Room name for the video meeting (same as meeting ID)
+ *                       description: Channel name for the video meeting (same as meeting ID)
  *                       example: "65f47a8cde3a6e7b5a1c9b94"
- *                     identity:
+ *                     uid:
  *                       type: string
- *                       description: User identity for the video meeting
+ *                       description: User ID for the video meeting
+ *                       example: "65f47a8cde3a6e7b5a1c9b91"
+ *                     appId:
+ *                       type: string
+ *                       description: Agora app ID
  *                       example: "65f47a8cde3a6e7b5a1c9b91"
  *       400:
  *         description: Invalid input or helper not found
