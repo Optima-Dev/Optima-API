@@ -182,6 +182,7 @@ const createMeetingAgora = asyncHandler(async (req, res, next) => {
   const uid = Math.floor(100000 + Math.random() * 900000);
 
   console.log(currentTimestamp, privilegeExpiredTs);
+  console.log(uid);
 
   const token = RtcTokenBuilder.buildTokenWithAccount(
     agoraAppId,
@@ -201,7 +202,7 @@ const createMeetingAgora = asyncHandler(async (req, res, next) => {
     data: {
       token,
       channelName: meeting._id.toString(), // Agora uses channelName, not roomName
-      uid: seeker.toString(), // Agora uses uid, not identity
+      uid: uid, // Agora uses uid, not identity
       appId: agoraAppId, // Frontend needs this
     },
   });
