@@ -12,6 +12,7 @@ import {
   acceptFirstMeeting,
   checkPendingTimeouts,
   getGlobalMeetings,
+  acceptMeetingAgora,
 } from "../controllers/meetingController.js";
 
 import {
@@ -283,6 +284,52 @@ import {
 
 /**
  * @swagger
+ * /api/meetings/accept-agora:
+ *   post:
+ *     summary: Accept the first available global meeting for agora
+ *     tags: [Meetings]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Meeting accepted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     token:
+ *                       type: string
+ *                       description: JWT token for joining the video meeting
+ *                       example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *                     channelName:
+ *                       type: string
+ *                       description: Room name for the video meeting (same as meeting ID)
+ *                       example: "65f47a8cde3a6e7b5a1c9b94"
+ *                     uid:
+ *                       type: integer
+ *                       description: User identity for the video meeting
+ *                       example: 123456
+ *                     appId:
+ *                       type: string
+ *                       description: Agora app ID
+ *                       example: "65f47a8cde3a6e7b5a1c9b91"
+ *       404:
+ *         description: No pending meetings available
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Not authorized to accept meetings
+ */
+
+/**
+ * @swagger
  * /api/meetings/pending-specific:
  *   get:
  *     summary: Get all pending specific meetings for the current helper
@@ -454,9 +501,9 @@ import {
  *                       description: Channel name for the video meeting (same as meeting ID)
  *                       example: "65f47a8cde3a6e7b5a1c9b94"
  *                     uid:
- *                       type: string
+ *                       type: integer
  *                       description: User ID for the video meeting
- *                       example: "65f47a8cde3a6e7b5a1c9b91"
+ *                       example: 123456
  *                     appId:
  *                       type: string
  *                       description: Agora app ID
@@ -479,6 +526,7 @@ router.get("/global", isAuthorized("helper"), getGlobalMeetings);
 router.post("/reject", isAuthorized("helper"), rejectMeeting);
 router.post("/accept-specific", isAuthorized("helper"), acceptSpecificMeeting);
 router.post("/accept-first", isAuthorized("helper"), acceptFirstMeeting);
+router.post("/accept-agora", isAuthorized("helper"), acceptMeetingAgora);
 router.get(
   "/pending-specific",
   isAuthorized("helper"),
