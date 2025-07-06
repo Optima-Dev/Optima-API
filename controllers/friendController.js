@@ -41,6 +41,9 @@ const sendFriendRequest = asyncHandler(async (req, res, next) => {
     );
   }
 
+  console.log("custom first name : ", customFirstName);
+  console.log("custom last name : ", customLastName);
+
   customFirstName = customFirstName.trim();
   customLastName = customLastName.trim();
   helperEmail = helperEmail.trim();
