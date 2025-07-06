@@ -137,11 +137,17 @@ const acceptFriendRequest = asyncHandler(async (req, res, next) => {
     user: helper._id,
   });
 
+  console.log("seeker friends");
+  console.log(seeker.myPeople);
+
   helper.myPeople.push({
     customFirstName: seeker.firstName,
     customLastName: seeker.lastName,
     user: seeker._id,
   });
+
+  console.log("helper friends");
+  console.log(helper.myPeople);
 
   await seeker.save();
   await helper.save();
