@@ -134,7 +134,13 @@ const acceptFriendRequest = asyncHandler(async (req, res, next) => {
   seeker.myPeople.push({
     customFirstName: friendRequest.customFirstName,
     customLastName: friendRequest.customLastName,
-    user: helper,
+    user: {
+      _id: helper._id,
+      firstName: helper.firstName,
+      lastName: helper.lastName,
+      email: helper.email,
+      role: helper.role,
+    },
   });
 
   console.log("seeker friends");
@@ -143,7 +149,13 @@ const acceptFriendRequest = asyncHandler(async (req, res, next) => {
   helper.myPeople.push({
     customFirstName: seeker.firstName,
     customLastName: seeker.lastName,
-    user: seeker,
+    user: {
+      _id: seeker._id,
+      firstName: seeker.firstName,
+      lastName: seeker.lastName,
+      email: seeker.email,
+      role: seeker.role,
+    },
   });
 
   console.log("helper friends");
@@ -290,12 +302,12 @@ const getAllFriends = asyncHandler(async (req, res, next) => {
 
   // Prepare response with populated data
   const friends = validFriends.map((person) => ({
-    customFirstName: person.user.firstName,
-    customLastName: person.user.lastName,
+    customFirstName: person.customFirstName,
+    customLastName: person.customLastName,
     user: {
       _id: person.user._id,
-      firstName: person.customFirstName,
-      lastName: person.customLastName,
+      firstName: person.user.firstName,
+      lastName: person.user.lastName,
       email: person.user.email,
     },
   }));
