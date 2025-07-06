@@ -134,7 +134,7 @@ const acceptFriendRequest = asyncHandler(async (req, res, next) => {
   seeker.myPeople.push({
     customFirstName: friendRequest.customFirstName,
     customLastName: friendRequest.customLastName,
-    user: helper._id,
+    user: helper,
   });
 
   console.log("seeker friends");
@@ -143,7 +143,7 @@ const acceptFriendRequest = asyncHandler(async (req, res, next) => {
   helper.myPeople.push({
     customFirstName: seeker.firstName,
     customLastName: seeker.lastName,
-    user: seeker._id,
+    user: seeker,
   });
 
   console.log("helper friends");
