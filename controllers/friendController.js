@@ -131,16 +131,12 @@ const acceptFriendRequest = asyncHandler(async (req, res, next) => {
     return next(new customError("User not found!", 404));
   }
 
+  console.log(friendRequest);
+
   seeker.myPeople.push({
     customFirstName: friendRequest.customFirstName,
     customLastName: friendRequest.customLastName,
-    user: {
-      _id: helper._id,
-      firstName: helper.firstName,
-      lastName: helper.lastName,
-      email: helper.email,
-      role: helper.role,
-    },
+    user: helper,
   });
 
   console.log("seeker friends");
@@ -149,13 +145,7 @@ const acceptFriendRequest = asyncHandler(async (req, res, next) => {
   helper.myPeople.push({
     customFirstName: seeker.firstName,
     customLastName: seeker.lastName,
-    user: {
-      _id: seeker._id,
-      firstName: seeker.firstName,
-      lastName: seeker.lastName,
-      email: seeker.email,
-      role: seeker.role,
-    },
+    user: seeker,
   });
 
   console.log("helper friends");
