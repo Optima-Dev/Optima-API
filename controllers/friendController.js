@@ -284,12 +284,12 @@ const getAllFriends = asyncHandler(async (req, res, next) => {
 
   // Prepare response with populated data
   const friends = validFriends.map((person) => ({
-    firstName: person.user.firstName,
-    lastName: person.user.lastName,
+    customFirstName: person.user.firstName,
+    customLastName: person.user.lastName,
     user: {
       _id: person.user._id,
-      customFirstName: person.customFirstName,
-      customLastName: person.customLastName,
+      firstName: person.customFirstName,
+      lastName: person.customLastName,
       email: person.user.email,
     },
   }));
