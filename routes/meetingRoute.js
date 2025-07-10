@@ -396,6 +396,17 @@ import {
 
 /**
  * @swagger
+ * /api/meetings/check-pending-timeouts:
+ *   post:
+ *     summary: Check for timed out pending meetings
+ *     tags: [Meetings]
+ *     security:
+ *       - bearerAuth: []
+ *
+ */
+
+/**
+ * @swagger
  * /api/meetings/accept-agora-specific:
  *   post:
  *     summary: Accept a specific meeting request for agora
@@ -411,6 +422,12 @@ import {
  *             required:
  *               - meetingId
  *             properties:
+ *               meetingId:
+ *                 type: string
+ *                 description: ID of the specific meeting to accept
+ *     responses:
+ *       200:
+ *         description: Meeting accepted successfully
  * /api/meetings/{id}:
  *   get:
  *     summary: Get meeting details
@@ -529,7 +546,6 @@ import {
  *       401:
  *         description: Unauthorized
  */
-
 // Base middleware for all routes
 router.use(isAuthenticated);
 

@@ -49,7 +49,7 @@ const meetingSchema = new mongoose.Schema(
 meetingSchema.methods.checkPendingTimeout = function () {
   if (this.status === "pending") {
     const waitingTime = Date.now() - this.createdAt;
-    return waitingTime > 5 * 60 * 1000; // 5 minutes in milliseconds
+    return waitingTime > 30 * 1000; // 5 minutes in milliseconds
   }
   return false;
 };
